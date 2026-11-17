@@ -116,11 +116,11 @@ public class AccountController : Controller
         return RedirectToAction("Login", "Account");
     }
 
-    // ── GET: /Account/Logout (Convenience redirect) ───────────────
+    // ── GET: /Account/Logout (Convenience safe redirect) ─────────
     [HttpGet]
-    public async Task<IActionResult> LogoutGet()
+    public IActionResult LogoutGet()
     {
-        await _signInManager.SignOutAsync();
+        // Require POST with antiforgery token for sign out to protect against CSRF attacks (CWE-352)
         return RedirectToAction("Login", "Account");
     }
 

@@ -34,7 +34,7 @@ public class BeneficiaryIndexViewModel
     public int ActiveBeneficiariesCount { get; set; }
 }
 
-public class CreateBeneficiaryViewModel
+public class CreateBeneficiaryViewModel : IValidatableObject
 {
     [Required(ErrorMessage = "Beneficiary full name is required")]
     [StringLength(150, ErrorMessage = "Full name cannot exceed 150 characters")]
@@ -70,9 +70,21 @@ public class CreateBeneficiaryViewModel
     public List<SelectListItem> CentresList { get; set; } = new();
     public bool IsAdmin { get; set; }
     public string? AssignedCentreName { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (DateOfBirth.HasValue && DateOfBirth.Value > DateTime.Today)
+        {
+            yield return new ValidationResult("Date of birth cannot be in the future.", new[] { nameof(DateOfBirth) });
+        }
+        if (RegistrationDate > DateTime.Today)
+        {
+            yield return new ValidationResult("Registration date cannot be in the future.", new[] { nameof(RegistrationDate) });
+        }
+    }
 }
 
-public class EditBeneficiaryViewModel
+public class EditBeneficiaryViewModel : IValidatableObject
 {
     [Required]
     public int BeneficiaryId { get; set; }
@@ -114,6 +126,18 @@ public class EditBeneficiaryViewModel
     public List<SelectListItem> CentresList { get; set; } = new();
     public bool IsAdmin { get; set; }
     public string? AssignedCentreName { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (DateOfBirth.HasValue && DateOfBirth.Value > DateTime.Today)
+        {
+            yield return new ValidationResult("Date of birth cannot be in the future.", new[] { nameof(DateOfBirth) });
+        }
+        if (RegistrationDate > DateTime.Today)
+        {
+            yield return new ValidationResult("Registration date cannot be in the future.", new[] { nameof(RegistrationDate) });
+        }
+    }
 }
 
 public class BeneficiaryDetailsViewModel

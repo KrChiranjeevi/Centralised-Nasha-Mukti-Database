@@ -156,6 +156,7 @@ public class AdminController : Controller
         }
 
         user.IsActive = !user.IsActive;
+        await _userManager.UpdateSecurityStampAsync(user);
         await _userManager.UpdateAsync(user);
 
         TempData["Success"] = $"User '{user.FullName}' status changed to {(user.IsActive ? "Active" : "Inactive")}.";

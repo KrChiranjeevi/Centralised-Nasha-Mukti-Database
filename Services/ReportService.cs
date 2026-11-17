@@ -486,12 +486,20 @@ public class ReportService : IReportService
         if (string.IsNullOrEmpty(value))
             return "\"\"";
 
-        var clean = value.Trim();
+        var clean = value;
 
         // Formula injection mitigation: If string starts with =, +, -, @, \t, \r, prepend a single quote
         if (clean.StartsWith("=") || clean.StartsWith("+") || clean.StartsWith("-") || clean.StartsWith("@") || clean.StartsWith("\t") || clean.StartsWith("\r"))
         {
             clean = "'" + clean;
+        }
+        else
+        {
+            var trimmed = clean.TrimStart();
+            if (trimmed.StartsWith("=") || trimmed.StartsWith("+") || trimmed.StartsWith("-") || trimmed.StartsWith("@"))
+            {
+                clean = "'" + clean;
+            }
         }
 
         // Escape double quotes
