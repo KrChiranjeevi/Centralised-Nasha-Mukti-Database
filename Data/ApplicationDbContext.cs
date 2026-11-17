@@ -22,6 +22,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<CounsellingSession> CounsellingSessions => Set<CounsellingSession>();
     public DbSet<Intervention> Interventions => Set<Intervention>();
     public DbSet<FollowUp> FollowUps => Set<FollowUp>();
+    public DbSet<CentreServiceSummaryView> CentreServiceSummaries => Set<CentreServiceSummaryView>();
+    public DbSet<StateBeneficiarySummaryView> StateBeneficiarySummaries => Set<StateBeneficiarySummaryView>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -179,7 +181,20 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.HasIndex(f => f.Status).HasDatabaseName("IX_FollowUps_Status");
         });
 
-        // ── 8. Seed Demonstration Data ────────────────────────────────────
+        // ── 8. SQL Server Views (Keyless Entity Types) ─────────────────────
+        modelBuilder.Entity<CentreServiceSummaryView>(entity =>
+        {
+            entity.HasNoKey();
+            entity.ToView("vw_CentreServiceSummary");
+        });
+
+        modelBuilder.Entity<StateBeneficiarySummaryView>(entity =>
+        {
+            entity.HasNoKey();
+            entity.ToView("vw_StateBeneficiarySummary");
+        });
+
+        // ── 9. Seed Demonstration Data ────────────────────────────────────
         SeedDemonstrationData(modelBuilder);
     }
 

@@ -517,6 +517,58 @@ namespace NashaMuktiDB.Migrations
                         });
                 });
 
+            modelBuilder.Entity("NashaMuktiDB.Models.CentreServiceSummaryView", b =>
+                {
+                    b.Property<int>("ActiveBeneficiaries")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CentreId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CentreName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CompletedCounsellingSessions")
+                        .HasColumnType("int");
+
+                    b.Property<string>("District")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("OverdueFollowUps")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PendingFollowUps")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StateId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StateName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TotalBeneficiaries")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalCounsellingSessions")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalFollowUps")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalInterventions")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_CentreServiceSummary", (string)null);
+                });
+
             modelBuilder.Entity("NashaMuktiDB.Models.CounsellingSession", b =>
                 {
                     b.Property<int>("SessionId")
@@ -870,6 +922,41 @@ namespace NashaMuktiDB.Migrations
                             IsActive = true,
                             StateName = "Haryana"
                         });
+                });
+
+            modelBuilder.Entity("NashaMuktiDB.Models.StateBeneficiarySummaryView", b =>
+                {
+                    b.Property<int>("ActiveBeneficiaries")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ActiveCentres")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("StateId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StateName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TotalBeneficiaries")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalCentres")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalCounsellingSessions")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalInterventions")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_StateBeneficiarySummary", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

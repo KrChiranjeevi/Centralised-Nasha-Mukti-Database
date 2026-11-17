@@ -61,11 +61,7 @@ builder.Services.AddScoped<IBeneficiaryService, BeneficiaryService>();
 builder.Services.AddScoped<ICounsellingService, CounsellingService>();
 builder.Services.AddScoped<IInterventionService, InterventionService>();
 builder.Services.AddScoped<IFollowUpService, FollowUpService>();
-builder.Services.AddScoped<ICentreService, CentreService>();
-builder.Services.AddScoped<IBeneficiaryService, BeneficiaryService>();
-builder.Services.AddScoped<ICounsellingService, CounsellingService>();
-builder.Services.AddScoped<IInterventionService, InterventionService>();
-builder.Services.AddScoped<IFollowUpService, FollowUpService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 // ── 5. MVC + Razor Views ─────────────────────────────────────
 builder.Services.AddControllersWithViews();
