@@ -1,0 +1,134 @@
+@model NashaMuktiDB.ViewModels.EditCentreViewModel
+@{
+    ViewData["Title"] = $"Edit {Model.CentreName}";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-pencil-square text-teal me-2"></i>Edit Centre Details
+        </h1>
+        <p class="page-subtitle">
+            Update facility details, contact information, and operating status
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Details" asp-route-id="@Model.CentreId" class="btn-outline-nm">
+            <i class="bi bi-eye"></i> View Details
+        </a>
+        <a asp-action="Index" class="btn-outline-nm">
+            <i class="bi bi-arrow-left"></i> Back to Directory
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-hospital panel-icon"></i> Editing Centre #@Model.CentreId
+                </h2>
+            </div>
+
+            <div class="panel-body">
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert-nm alert-danger-nm mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+                        <div>
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <div>@error.ErrorMessage</div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <form asp-action="Edit" asp-route-id="@Model.CentreId" method="post" data-loading="true">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="CentreId" />
+
+                    <div class="row g-3">
+                        <!-- Centre Name -->
+                        <div class="col-md-12">
+                            <label asp-for="CentreName" class="form-label-nm">
+                                Official Centre Name <span class="required">*</span>
+                            </label>
+                            <input asp-for="CentreName" class="form-control-nm" required />
+                            <span asp-validation-for="CentreName" class="field-validation-error"></span>
+                        </div>
+
+                        <!-- State Dropdown -->
+                        <div class="col-md-6">
+                            <label asp-for="StateId" class="form-label-nm">
+                                State / Union Territory <span class="required">*</span>
+                            </label>
+                            <select asp-for="StateId" asp-items="Model.StatesList" class="form-control-nm" required>
+                                <option value="">-- Select State / UT --</option>
+                            </select>
+                            <span asp-validation-for="StateId" class="field-validation-error"></span>
+                        </div>
+
+                        <!-- District -->
+                        <div class="col-md-6">
+                            <label asp-for="District" class="form-label-nm">
+                                District Name <span class="required">*</span>
+                            </label>
+                            <input asp-for="District" class="form-control-nm" required />
+                            <span asp-validation-for="District" class="field-validation-error"></span>
+                        </div>
+
+                        <!-- Complete Physical Address -->
+                        <div class="col-md-12">
+                            <label asp-for="Address" class="form-label-nm">
+                                Full Physical Address <span class="required">*</span>
+                            </label>
+                            <textarea asp-for="Address" class="form-control-nm" rows="3" required></textarea>
+                            <span asp-validation-for="Address" class="field-validation-error"></span>
+                        </div>
+
+                        <!-- Contact Number -->
+                        <div class="col-md-6">
+                            <label asp-for="ContactNumber" class="form-label-nm">
+                                Official Contact Number <span class="required">*</span>
+                            </label>
+                            <input asp-for="ContactNumber" class="form-control-nm" required />
+                            <span asp-validation-for="ContactNumber" class="field-validation-error"></span>
+                        </div>
+
+                        <!-- Email Address -->
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label-nm">
+                                Official Email Address <span class="required">*</span>
+                            </label>
+                            <input asp-for="Email" type="email" class="form-control-nm" required />
+                            <span asp-validation-for="Email" class="field-validation-error"></span>
+                        </div>
+
+                        <!-- Status Checkbox -->
+                        <div class="col-md-12">
+                            <div class="form-check mt-2">
+                                <input asp-for="IsActive" class="form-check-input" style="accent-color:var(--teal-600);" />
+                                <label asp-for="IsActive" class="form-check-label fw-600">
+                                    Centre is Active and Operational
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                        <a asp-action="Details" asp-route-id="@Model.CentreId" class="btn-outline-nm">Cancel</a>
+                        <button type="submit" class="btn-primary-nm">
+                            <i class="bi bi-check-circle-fill"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

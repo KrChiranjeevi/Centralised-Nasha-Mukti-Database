@@ -1,0 +1,280 @@
+@model NashaMuktiDB.ViewModels.CentreDetailsViewModel
+@using Microsoft.AspNetCore.Identity
+@using NashaMuktiDB.Models
+@inject SignInManager<ApplicationUser> SignInManager
+
+@{
+    ViewData["Title"] = Model.CentreName;
+    bool isAdmin = User.IsInRole("Admin");
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="id-chip">CENTRE #@Model.CentreId</span>
+            @if (Model.IsActive)
+            {
+                <span class="badge-status badge-active">Operational</span>
+            }
+            else
+            {
+                <span class="badge-status badge-inactive">Deactivated</span>
+            }
+        </div>
+        <h1 class="page-title">@Model.CentreName</h1>
+        <p class="page-subtitle">
+            <i class="bi bi-geo-alt-fill text-teal me-1"></i>@Model.District, @Model.StateName
+        </p>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-action="Index" class="btn-outline-nm">
+            <i class="bi bi-arrow-left"></i> Back to Directory
+        </a>
+        @if (isAdmin)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.CentreId" class="btn-primary-nm">
+                <i class="bi bi-pencil-square"></i> Edit Centre
+            </a>
+
+            <!-- Controlled Deactivation / Activation Form -->
+            <form asp-action="ToggleStatus" asp-route-id="@Model.CentreId" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" 
+                        class="btn-outline-nm @(Model.IsActive ? "text-danger" : "text-success")"
+                        data-confirm="Are you sure you want to @(Model.IsActive ? "deactivate" : "activate") this centre? All historical beneficiary records will be safely preserved.">
+                    <i class="bi @(Model.IsActive ? "bi-slash-circle" : "bi-check-circle")"></i>
+                    @(Model.IsActive ? "Deactivate Centre" : "Reactivate Centre")
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+<!-- ── KPI METRICS CARDS ─────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-icon stat-icon-blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-card-value">@Model.TotalBeneficiaries</div>
+                <div class="stat-card-label">Total Beneficiaries Registered</div>
+                <div class="small-text text-muted mt-1">Lifetime registrations</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-icon stat-icon-green">
+                <i class="bi bi-person-check-fill"></i>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-card-value">@Model.ActiveBeneficiaries</div>
+                <div class="stat-card-label">Active Beneficiaries</div>
+                <div class="small-text text-success mt-1">Currently receiving care</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-icon stat-icon-teal">
+                <i class="bi bi-person-badge-fill"></i>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-card-value">@Model.TotalStaffMembers</div>
+                <div class="stat-card-label">Assigned Staff Members</div>
+                <div class="small-text text-muted mt-1">Authorized counsellors/staff</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── CENTRE INFORMATION & DETAILS ──────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-info-circle panel-icon"></i> Facility Information
+                </h2>
+            </div>
+            <div class="panel-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Facility Name</dt>
+                    <dd class="col-sm-8 fw-bold text-navy">@Model.CentreName</dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">State / UT</dt>
+                    <dd class="col-sm-8"><span class="badge bg-light text-dark border">@Model.StateName</span></dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">District</dt>
+                    <dd class="col-sm-8">@Model.District</dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Complete Address</dt>
+                    <dd class="col-sm-8">@Model.Address</dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Registered On</dt>
+                    <dd class="col-sm-8 text-muted">@Model.CreatedAt.ToString("dd MMMM yyyy, hh:mm tt") UTC</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-telephone panel-icon"></i> Official Contact Details
+                </h2>
+            </div>
+            <div class="panel-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Phone Number</dt>
+                    <dd class="col-sm-8">
+                        <i class="bi bi-telephone text-teal me-1"></i>
+                        <a href="tel:@Model.ContactNumber" class="text-navy fw-600">@Model.ContactNumber</a>
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Email Address</dt>
+                    <dd class="col-sm-8">
+                        <i class="bi bi-envelope text-teal me-1"></i>
+                        <a href="mailto:@Model.Email" class="text-navy fw-600">@Model.Email</a>
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Operating Status</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge-status badge-active">Operational</span>
+                        }
+                        else
+                        {
+                            <span class="badge-status badge-inactive">Deactivated (Historical records preserved)</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── RECENT BENEFICIARIES & ASSIGNED STAFF ─────────────────── -->
+<div class="row g-3">
+    <!-- Beneficiaries Registered -->
+    <div class="col-lg-7">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-people panel-icon"></i>
+                    Recent Beneficiaries at this Centre
+                </h2>
+                <a asp-controller="Beneficiaries" asp-action="Index" class="btn-outline-nm py-1 px-2 small-text">
+                    View All Beneficiaries
+                </a>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="data-table" aria-label="Recent beneficiaries registered at centre">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Full Name</th>
+                            <th>Registration Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.RecentBeneficiaries.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted small-text">
+                                    No beneficiaries currently registered under this facility.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var ben in Model.RecentBeneficiaries)
+                            {
+                                <tr>
+                                    <td><span class="id-chip">@ben.BeneficiaryCode</span></td>
+                                    <td class="fw-bold text-navy">@ben.FullName</td>
+                                    <td class="small-text text-muted">@ben.RegistrationDate.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        <span class="badge-status @(ben.Status == "Active" ? "badge-active" : "badge-pending")">
+                                            @ben.Status
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assigned Staff Members -->
+    <div class="col-lg-5">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-person-badge panel-icon"></i>
+                    Assigned Staff Members
+                </h2>
+                @if (isAdmin)
+                {
+                    <a asp-controller="Admin" asp-action="CreateUser" class="btn-outline-nm py-1 px-2 small-text">
+                        <i class="bi bi-plus"></i> Assign Staff
+                    </a>
+                }
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="data-table" aria-label="Assigned staff members">
+                    <thead>
+                        <tr>
+                            <th>Staff Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.StaffMembers.Any())
+                        {
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted small-text">
+                                    No dedicated staff assigned yet.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var staff in Model.StaffMembers)
+                            {
+                                <tr>
+                                    <td class="fw-600 text-navy">
+                                        <i class="bi bi-person-circle text-teal me-1"></i>
+                                        @staff.FullName
+                                    </td>
+                                    <td class="small-text"><code>@staff.Email</code></td>
+                                    <td>
+                                        @if (staff.IsActive)
+                                        {
+                                            <span class="badge-status badge-active">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-status badge-inactive">Inactive</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

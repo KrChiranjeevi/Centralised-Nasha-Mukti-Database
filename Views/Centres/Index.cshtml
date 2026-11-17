@@ -1,23 +1,250 @@
+@model NashaMuktiDB.ViewModels.CentreIndexViewModel
 @{
-    ViewData["Title"] = "Centres";
-    ViewData["BreadcrumbParent"] = null;
+    ViewData["Title"] = "Nasha Mukti Centres";
 }
+
+<!-- Page Header -->
 <div class="page-header">
     <div>
-        <h1 class="page-title"><i class="bi bi-building text-teal me-2"></i>Nasha Mukti Centres</h1>
-        <p class="page-subtitle">Manage registered de-addiction facilities</p>
+        <h1 class="page-title">
+            <i class="bi bi-building text-teal me-2"></i>Nasha Mukti Centres
+        </h1>
+        <p class="page-subtitle">
+            Directory of government-supported de-addiction and counselling facilities
+        </p>
     </div>
-</div>
-<div class="panel">
-    <div class="panel-body">
-        <div class="empty-state">
-            <span class="empty-state-icon">🏥</span>
-            <div class="empty-state-title">Centres module coming in Phase 4</div>
-            <div class="empty-state-text">
-                Full CRUD for Nasha Mukti Centres will be implemented after the database layer (Phase 2)
-                and authentication (Phase 3) are set up.
-            </div>
-        </div>
+    <div class="d-flex gap-2 align-items-center">
+        @if (Model.IsAdmin)
+        {
+            <a asp-action="Create" class="btn-primary-nm">
+                <i class="bi bi-plus-circle-fill"></i> Add New Centre
+            </a>
+        }
     </div>
 </div>
 
+<!-- Quick Metrics Bar (Admin view) -->
+@if (Model.IsAdmin)
+{
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-md-3">
+            <div class="p-3 bg-white rounded border shadow-sm">
+                <span class="small-text text-muted text-uppercase fw-600">Total Centres</span>
+                <div class="fs-4 fw-bold text-navy">@Model.TotalCentresCount</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="p-3 bg-white rounded border shadow-sm">
+                <span class="small-text text-muted text-uppercase fw-600">Active Facilities</span>
+                <div class="fs-4 fw-bold text-success">@Model.ActiveCentresCount</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="p-3 bg-white rounded border shadow-sm">
+                <span class="small-text text-muted text-uppercase fw-600">Inactive / Suspended</span>
+                <div class="fs-4 fw-bold text-secondary">@(Model.TotalCentresCount - Model.ActiveCentresCount)</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="p-3 bg-white rounded border shadow-sm">
+                <span class="small-text text-muted text-uppercase fw-600">Filter Status</span>
+                <div class="fs-6 fw-bold text-teal mt-1">@Model.Centres.TotalCount Match(es)</div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- ── SEARCH & FILTER PANEL ─────────────────────────────────── -->
+<div class="panel mb-4">
+    <div class="panel-body p-3">
+        <form method="get" asp-action="Index" class="row g-2 align-items-end">
+            <!-- Search Text -->
+            <div class="col-md-4">
+                <label class="form-label-nm mb-1">Search Centre or District</label>
+                <div class="search-box">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" name="search" value="@Model.Search" placeholder="Type centre name, district..." />
+                </div>
+            </div>
+
+            <!-- State Filter -->
+            <div class="col-md-3">
+                <label class="form-label-nm mb-1">Filter by State</label>
+                <select name="stateId" class="form-control-nm">
+                    <option value="">All States / UTs</option>
+                    @foreach (var state in Model.States)
+                    {
+                        <option value="@state.Value" selected="@(Model.StateId?.ToString() == state.Value)">
+                            @state.Text
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="col-md-3">
+                <label class="form-label-nm mb-1">Status</label>
+                <select name="status" class="form-control-nm">
+                    <option value="all" selected="@(Model.Status == "all")">All Statuses</option>
+                    <option value="active" selected="@(Model.Status == "active")">Active Only</option>
+                    <option value="inactive" selected="@(Model.Status == "inactive")">Inactive Only</option>
+                </select>
+            </div>
+
+            <!-- Actions -->
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn-primary-nm w-100 justify-content-center py-2">
+                    <i class="bi bi-funnel-fill"></i> Filter
+                </button>
+                @if (!string.IsNullOrEmpty(Model.Search) || Model.StateId.HasValue || Model.Status != "all")
+                {
+                    <a asp-action="Index" class="btn-outline-nm py-2 px-3" title="Clear Filters">
+                        <i class="bi bi-x-circle"></i>
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ── CENTRES DATA TABLE ─────────────────────────────────────── -->
+<div class="panel">
+    <div class="panel-header">
+        <h2 class="panel-title">
+            <i class="bi bi-list-ul panel-icon"></i>
+            Centres List (@Model.Centres.TotalCount total records)
+        </h2>
+    </div>
+
+    <div style="overflow-x:auto;">
+        <table class="data-table" aria-label="Nasha Mukti Centres Table">
+            <thead>
+                <tr>
+                    <th>Centre Name</th>
+                    <th>State</th>
+                    <th>District</th>
+                    <th>Contact Info</th>
+                    <th>Status</th>
+                    <th>Beneficiaries</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Centres.Items.Any())
+                {
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <span class="empty-state-icon">🏥</span>
+                                <div class="empty-state-title">No Centres Found</div>
+                                <div class="empty-state-text">
+                                    @(Model.IsAdmin ? "No matching records found. Try clearing your filters or create a new centre." : "No centre records are assigned to your staff profile.")
+                                </div>
+                                @if (Model.IsAdmin)
+                                {
+                                    <a asp-action="Create" class="btn-primary-nm mt-2">
+                                        <i class="bi bi-plus-circle"></i> Add Centre
+                                    </a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model.Centres.Items)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.CentreId" class="fw-bold text-navy d-block">
+                                    @item.CentreName
+                                </a>
+                                <span class="small-text text-muted">ID: #@item.CentreId</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">@item.StateName</span>
+                            </td>
+                            <td>@item.District</td>
+                            <td class="small-text">
+                                <div><i class="bi bi-telephone text-muted me-1"></i>@item.ContactNumber</div>
+                                <div><i class="bi bi-envelope text-muted me-1"></i>@item.Email</div>
+                            </td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge-status badge-active">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-inactive">Inactive</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill bg-info text-dark">
+                                    <i class="bi bi-people-fill me-1"></i>@item.BeneficiaryCount
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <a asp-action="Details" asp-route-id="@item.CentreId"
+                                       class="btn-outline-nm py-1 px-2 small-text" title="View Details">
+                                        <i class="bi bi-eye"></i> Details
+                                    </a>
+                                    @if (Model.IsAdmin)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.CentreId"
+                                           class="btn-outline-nm py-1 px-2 small-text ms-1" title="Edit Centre">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── SERVER-SIDE PAGINATION ─────────────────────────────── -->
+    @if (Model.Centres.TotalPages > 1)
+    {
+        <div class="panel-body py-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span class="small-text text-muted">
+                Showing page <strong>@Model.Centres.PageIndex</strong> of <strong>@Model.Centres.TotalPages</strong>
+                (@Model.Centres.TotalCount total centres)
+            </span>
+            <div class="pagination-nm m-0">
+                <a asp-action="Index"
+                   asp-route-page="@(Model.Centres.PageIndex - 1)"
+                   asp-route-search="@Model.Search"
+                   asp-route-stateId="@Model.StateId"
+                   asp-route-status="@Model.Status"
+                   class="page-btn @(!Model.Centres.HasPreviousPage ? "disabled" : "")">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+
+                @for (int i = 1; i <= Model.Centres.TotalPages; i++)
+                {
+                    <a asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-search="@Model.Search"
+                       asp-route-stateId="@Model.StateId"
+                       asp-route-status="@Model.Status"
+                       class="page-btn @(i == Model.Centres.PageIndex ? "active" : "")">
+                        @i
+                    </a>
+                }
+
+                <a asp-action="Index"
+                   asp-route-page="@(Model.Centres.PageIndex + 1)"
+                   asp-route-search="@Model.Search"
+                   asp-route-stateId="@Model.StateId"
+                   asp-route-status="@Model.Status"
+                   class="page-btn @(!Model.Centres.HasNextPage ? "disabled" : "")">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    }
+</div>
