@@ -21,3 +21,4 @@ public interface IBeneficiaryService
     Task<string> GenerateUniqueBeneficiaryCodeAsync(int centreId);
     Task<List<SelectListItem>> GetActiveCentresSelectListAsync();
 }
+

@@ -134,4 +134,9 @@ public class BeneficiaryDetailsViewModel
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool CanEdit { get; set; }
+
+    // Phase 6: Integrated Clinical Dossier
+    public List<CounsellingSummaryItem> CounsellingSessions { get; set; } = new();
+    public List<InterventionSummaryItem> Interventions { get; set; } = new();
+    public List<FollowUpSummaryItem> FollowUps { get; set; } = new();
 }

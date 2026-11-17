@@ -250,3 +250,4 @@ public class CentreService : ICentreService
         return await _context.Centres.CountAsync();
     }
 }
+

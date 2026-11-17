@@ -15,3 +15,4 @@ public interface ICentreAuthorizationService
     Task<bool> CanAccessCentreAsync(ClaimsPrincipal principal, int centreId);
     Task<bool> CanAccessBeneficiaryAsync(ClaimsPrincipal principal, int beneficiaryId);
 }
+

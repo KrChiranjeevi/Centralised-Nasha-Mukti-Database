@@ -1,0 +1,96 @@
+@model NashaMuktiDB.ViewModels.EditInterventionViewModel
+@{
+    ViewData["Title"] = $"Edit Intervention - {Model.BeneficiaryCode}";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Edit Treatment Intervention</h1>
+        <p class="page-subtitle">Update treatment details for <strong>@Model.BeneficiaryName</strong>.</p>
+    </div>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.InterventionId" class="btn-outline-nm">
+            <i class="bi bi-arrow-left"></i> Cancel &amp; Back
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-pencil-square panel-icon"></i> Edit Intervention Protocol
+                </h2>
+            </div>
+            <div class="panel-body">
+                <form asp-action="Edit" asp-route-id="@Model.InterventionId" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="InterventionId" />
+                    <input type="hidden" asp-for="BeneficiaryId" />
+                    <input type="hidden" asp-for="BeneficiaryCode" />
+                    <input type="hidden" asp-for="BeneficiaryName" />
+                    <input type="hidden" asp-for="CentreName" />
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <!-- Beneficiary Info Banner -->
+                    <div class="alert alert-light border d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <span class="small-text text-muted text-uppercase fw-600 d-block">Beneficiary</span>
+                            <strong class="fs-6 text-navy">@Model.BeneficiaryName</strong>
+                            <span class="id-chip ms-2">@Model.BeneficiaryCode</span>
+                            <div class="small-text text-muted"><i class="bi bi-hospital me-1"></i>@Model.CentreName</div>
+                        </div>
+                        <span class="badge bg-light text-muted border">ID #@Model.InterventionId</span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="InterventionType" class="form-label fw-600">Intervention Category <span class="text-danger">*</span></label>
+                            <select asp-for="InterventionType" asp-items="Model.TypesList" class="form-select"></select>
+                            <span asp-validation-for="InterventionType" class="text-danger small-text"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ServiceDate" class="form-label fw-600">Service / Commencement Date <span class="text-danger">*</span></label>
+                            <input asp-for="ServiceDate" type="date" class="form-control" />
+                            <span asp-validation-for="ServiceDate" class="text-danger small-text"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Status" class="form-label fw-600">Status <span class="text-danger">*</span></label>
+                            <select asp-for="Status" asp-items="Model.StatusesList" class="form-select"></select>
+                            <span asp-validation-for="Status" class="text-danger small-text"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ResponsibleStaffName" class="form-label fw-600">Responsible Specialist / Officer</label>
+                            <input asp-for="ResponsibleStaffName" class="form-control" />
+                            <span asp-validation-for="ResponsibleStaffName" class="text-danger small-text"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Notes" class="form-label fw-600">Clinical &amp; Treatment Notes</label>
+                        <textarea asp-for="Notes" class="form-control" rows="5"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger small-text"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a asp-action="Details" asp-route-id="@Model.InterventionId" class="btn-outline-nm">Cancel</a>
+                        <button type="submit" class="btn-primary-nm">
+                            <i class="bi bi-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

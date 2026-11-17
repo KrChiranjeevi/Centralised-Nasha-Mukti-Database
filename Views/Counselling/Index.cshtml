@@ -1,16 +1,255 @@
+@model NashaMuktiDB.ViewModels.CounsellingIndexViewModel
 @{
     ViewData["Title"] = "Counselling Sessions";
 }
+
+<!-- Page Header -->
 <div class="page-header">
     <div>
-        <h1 class="page-title"><i class="bi bi-chat-heart text-teal me-2"></i>Counselling Sessions</h1>
-        <p class="page-subtitle">Individual, group, and family counselling records</p>
+        <h1 class="page-title">Counselling Sessions</h1>
+        <p class="page-subtitle">Track individual, group, family, and crisis therapy interventions across beneficiaries.</p>
     </div>
-</div>
-<div class="panel panel-body">
-    <div class="empty-state">
-        <span class="empty-state-icon">💬</span>
-        <div class="empty-state-title">Counselling module coming in Phase 6</div>
+    <div>
+        <a asp-action="Create" class="btn-primary-nm">
+            <i class="bi bi-plus-circle"></i> Record Session
+        </a>
     </div>
 </div>
 
+<!-- Stat Quick Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="kpi-label">Total Recorded Sessions</div>
+                    <div class="kpi-value text-navy">@Model.TotalSessionsCount</div>
+                </div>
+                <div class="kpi-icon-wrap bg-light-primary text-teal">
+                    <i class="bi bi-chat-heart fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="kpi-label">Completed Sessions</div>
+                    <div class="kpi-value text-success">@Model.CompletedCount</div>
+                </div>
+                <div class="kpi-icon-wrap bg-light-success text-success">
+                    <i class="bi bi-check2-circle fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="kpi-label">Upcoming Scheduled</div>
+                    <div class="kpi-value text-primary">@Model.ScheduledCount</div>
+                </div>
+                <div class="kpi-icon-wrap bg-light-primary text-primary">
+                    <i class="bi bi-calendar-event fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filter Form -->
+<div class="panel mb-4">
+    <div class="panel-body">
+        <form asp-action="Index" method="get" class="row g-2 align-items-end">
+            @if (Model.BeneficiaryId.HasValue)
+            {
+                <input type="hidden" name="beneficiaryId" value="@Model.BeneficiaryId" />
+            }
+
+            <div class="col-md-3">
+                <label class="form-label small-text fw-600">Search</label>
+                <div class="search-input-wrap">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" name="search" value="@Model.SearchQuery" 
+                           class="form-control form-control-sm" placeholder="Beneficiary ID, name or counsellor..." />
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small-text fw-600">Session Type</label>
+                <select name="sessionType" class="form-select form-select-sm">
+                    <option value="all">All Session Types</option>
+                    @foreach (var t in Model.TypesList)
+                    {
+                        <option value="@t.Value" selected="@t.Selected">@t.Text</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small-text fw-600">Status</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="all">All Statuses</option>
+                    @foreach (var st in Model.StatusesList)
+                    {
+                        <option value="@st.Value" selected="@st.Selected">@st.Text</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small-text fw-600">From Date</label>
+                <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm" />
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small-text fw-600">To Date</label>
+                <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm" />
+            </div>
+
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn-primary-nm btn-sm w-100" title="Apply Filter">
+                    <i class="bi bi-funnel"></i>
+                </button>
+                <a asp-action="Index" class="btn-outline-nm btn-sm" title="Clear Filters">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.BeneficiaryName))
+{
+    <div class="alert alert-info py-2 px-3 small-text d-flex justify-content-between align-items-center mb-3">
+        <span><i class="bi bi-person-badge me-1"></i> Showing sessions for: <strong>@Model.BeneficiaryName</strong></span>
+        <a asp-action="Index" class="btn btn-sm btn-link text-decoration-none p-0">Clear Beneficiary Filter</a>
+    </div>
+}
+
+<!-- Sessions Table Panel -->
+<div class="panel">
+    <div class="panel-header d-flex justify-content-between align-items-center">
+        <h2 class="panel-title">
+            <i class="bi bi-journal-medical panel-icon"></i> Session Records
+        </h2>
+        <span class="text-muted small-text">Page @Model.Sessions.PageIndex of @Model.Sessions.TotalPages (@Model.Sessions.TotalCount total records)</span>
+    </div>
+
+    @if (!Model.Sessions.Any())
+    {
+        <div class="empty-state py-5">
+            <i class="bi bi-chat-square-text empty-state-icon"></i>
+            <div class="empty-state-title">No Counselling Sessions Found</div>
+            <p class="empty-state-text">No counselling session records match your search criteria.</p>
+            <a asp-action="Create" class="btn-primary-nm">Record First Session</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Beneficiary</th>
+                        <th>Centre</th>
+                        <th>Session Type</th>
+                        <th>Counsellor</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.Sessions)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-600">@s.SessionDate.ToString("dd MMM yyyy")</div>
+                                <span class="text-muted small-text">@s.CreatedAt.ToString("hh:mm tt") UTC</span>
+                            </td>
+                            <td>
+                                <a asp-controller="Beneficiaries" asp-action="Details" asp-route-id="@s.BeneficiaryId" class="fw-bold text-navy text-decoration-none">
+                                    @s.BeneficiaryName
+                                </a>
+                                <div><span class="id-chip small-text">@s.BeneficiaryCode</span></div>
+                            </td>
+                            <td><span class="small-text text-muted">@s.CentreName</span></td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    <i class="bi bi-chat-dots text-teal me-1"></i>@s.SessionType
+                                </span>
+                            </td>
+                            <td>@(string.IsNullOrWhiteSpace(s.CounsellorName) ? "—" : s.CounsellorName)</td>
+                            <td>
+                                @if (s.SessionStatus == "Completed")
+                                {
+                                    <span class="badge-status badge-completed">Completed</span>
+                                }
+                                else if (s.SessionStatus == "Scheduled")
+                                {
+                                    <span class="badge-status badge-active">Scheduled</span>
+                                }
+                                else if (s.SessionStatus == "Cancelled")
+                                {
+                                    <span class="badge-status badge-inactive">Cancelled</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@s.SessionStatus</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@s.SessionId" class="btn btn-outline-secondary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@s.SessionId" class="btn btn-outline-secondary" title="Edit Session">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.Sessions.TotalPages > 1)
+        {
+            <div class="panel-body border-top py-3 d-flex justify-content-between align-items-center">
+                <span class="small-text text-muted">Showing page @Model.Sessions.PageIndex of @Model.Sessions.TotalPages</span>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item @(!Model.Sessions.HasPreviousPage ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" 
+                               asp-route-page="@(Model.Sessions.PageIndex - 1)"
+                               asp-route-search="@Model.SearchQuery"
+                               asp-route-beneficiaryId="@Model.BeneficiaryId"
+                               asp-route-sessionType="@Model.SessionType"
+                               asp-route-status="@Model.Status"
+                               asp-route-fromDate="@(Model.FromDate?.ToString("yyyy-MM-dd"))"
+                               asp-route-toDate="@(Model.ToDate?.ToString("yyyy-MM-dd"))">Previous</a>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">@Model.Sessions.PageIndex</span>
+                        </li>
+                        <li class="page-item @(!Model.Sessions.HasNextPage ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" 
+                               asp-route-page="@(Model.Sessions.PageIndex + 1)"
+                               asp-route-search="@Model.SearchQuery"
+                               asp-route-beneficiaryId="@Model.BeneficiaryId"
+                               asp-route-sessionType="@Model.SessionType"
+                               asp-route-status="@Model.Status"
+                               asp-route-fromDate="@(Model.FromDate?.ToString("yyyy-MM-dd"))"
+                               asp-route-toDate="@(Model.ToDate?.ToString("yyyy-MM-dd"))">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    }
+</div>

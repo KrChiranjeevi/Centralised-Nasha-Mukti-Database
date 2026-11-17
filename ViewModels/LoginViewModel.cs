@@ -19,3 +19,4 @@ public class LoginViewModel
 
     public string? ReturnUrl { get; set; }
 }
+

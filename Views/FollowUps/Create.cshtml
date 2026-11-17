@@ -1,0 +1,105 @@
+@model NashaMuktiDB.ViewModels.CreateFollowUpViewModel
+@{
+    ViewData["Title"] = "Schedule Follow-up";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Schedule Follow-up Appointment</h1>
+        <p class="page-subtitle">Plan a check-in appointment for post-rehabilitation monitoring and recovery reinforcement.</p>
+    </div>
+    <div>
+        @if (Model.BeneficiaryId > 0)
+        {
+            <a asp-controller="Beneficiaries" asp-action="Details" asp-route-id="@Model.BeneficiaryId" class="btn-outline-nm">
+                <i class="bi bi-arrow-left"></i> Back to Beneficiary
+            </a>
+        }
+        else
+        {
+            <a asp-action="Index" class="btn-outline-nm">
+                <i class="bi bi-arrow-left"></i> Back to Follow-ups
+            </a>
+        }
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-calendar-plus panel-icon"></i> Follow-up Scheduling Form
+                </h2>
+            </div>
+            <div class="panel-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <!-- Beneficiary Preselection -->
+                    @if (Model.BeneficiaryId > 0 && !string.IsNullOrEmpty(Model.BeneficiaryName))
+                    {
+                        <input type="hidden" asp-for="BeneficiaryId" />
+                        <div class="alert alert-light border d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <span class="small-text text-muted text-uppercase fw-600 d-block">Scheduling follow-up for</span>
+                                <strong class="fs-6 text-navy">@Model.BeneficiaryName</strong>
+                                <span class="id-chip ms-2">@Model.BeneficiaryCode</span>
+                                @if (!string.IsNullOrEmpty(Model.CentreName))
+                                {
+                                    <div class="small-text text-muted"><i class="bi bi-hospital me-1"></i>@Model.CentreName</div>
+                                }
+                            </div>
+                            <span class="badge bg-light text-success border border-success px-2 py-1">Pre-selected</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <label asp-for="BeneficiaryId" class="form-label fw-600">Beneficiary <span class="text-danger">*</span></label>
+                            <select asp-for="BeneficiaryId" asp-items="Model.BeneficiariesList" class="form-select">
+                                <option value="">-- Select Active Beneficiary --</option>
+                            </select>
+                            <span asp-validation-for="BeneficiaryId" class="text-danger small-text"></span>
+                        </div>
+                    }
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="ScheduledDate" class="form-label fw-600">Scheduled Date <span class="text-danger">*</span></label>
+                            <input asp-for="ScheduledDate" type="date" class="form-control" />
+                            <span asp-validation-for="ScheduledDate" class="text-danger small-text"></span>
+                            <div class="form-text">Defaulted to 14 days from today for standard post-discharge follow-up.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Status" class="form-label fw-600">Initial Status <span class="text-danger">*</span></label>
+                            <input asp-for="Status" class="form-control" readonly />
+                            <span asp-validation-for="Status" class="text-danger small-text"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Notes" class="form-label fw-600">Follow-up Instructions / Goal Notes</label>
+                        <textarea asp-for="Notes" class="form-control" rows="4" 
+                                  placeholder="Specify check-in purpose (e.g. assess craving levels, review prescription adherence, check family integration)..."></textarea>
+                        <span asp-validation-for="Notes" class="text-danger small-text"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a asp-action="Index" class="btn-outline-nm">Cancel</a>
+                        <button type="submit" class="btn-primary-nm">
+                            <i class="bi bi-calendar-check"></i> Schedule Appointment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

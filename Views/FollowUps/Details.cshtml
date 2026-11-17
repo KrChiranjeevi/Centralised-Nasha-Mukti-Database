@@ -1,0 +1,166 @@
+@model NashaMuktiDB.ViewModels.FollowUpDetailsViewModel
+@{
+    ViewData["Title"] = $"Follow-up Details - {Model.BeneficiaryCode}";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="id-chip fs-6">@Model.BeneficiaryCode</span>
+            @if (Model.Status == "Completed")
+            {
+                <span class="badge-status badge-completed">Completed</span>
+            }
+            else if (Model.Status == "Pending")
+            {
+                if (Model.IsOverdue)
+                {
+                    <span class="badge-status badge-inactive">Pending (Overdue)</span>
+                }
+                else
+                {
+                    <span class="badge-status badge-active">Pending</span>
+                }
+            }
+            else if (Model.Status == "Missed")
+            {
+                <span class="badge bg-warning text-dark border">Missed</span>
+            }
+            else if (Model.Status == "Cancelled")
+            {
+                <span class="badge-status badge-inactive">Cancelled</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">@Model.Status</span>
+            }
+        </div>
+        <h1 class="page-title">Follow-up Appointment Record</h1>
+        <p class="page-subtitle">
+            Scheduled for <strong>@Model.ScheduledDate.ToString("dd MMMM yyyy")</strong> with <strong>@Model.BeneficiaryName</strong>
+        </p>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-action="Index" class="btn-outline-nm">
+            <i class="bi bi-arrow-left"></i> All Follow-ups
+        </a>
+        <a asp-controller="Beneficiaries" asp-action="Details" asp-route-id="@Model.BeneficiaryId" class="btn-outline-nm">
+            <i class="bi bi-person"></i> Beneficiary Dossier
+        </a>
+        @if (Model.CanEdit)
+        {
+            @if (Model.Status == "Pending")
+            {
+                <a asp-action="Complete" asp-route-id="@Model.FollowUpId" class="btn-primary-nm">
+                    <i class="bi bi-clipboard-check"></i> Record Outcome
+                </a>
+
+                <form asp-action="Cancel" asp-route-id="@Model.FollowUpId" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-outline-nm text-danger" 
+                            data-confirm="Are you sure you want to cancel this scheduled follow-up appointment?">
+                        <i class="bi bi-calendar-x"></i> Cancel Appointment
+                    </button>
+                </form>
+            }
+        }
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Schedule Info -->
+    <div class="col-lg-5">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-calendar-event panel-icon"></i> Schedule Details
+                </h2>
+            </div>
+            <div class="panel-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Beneficiary</dt>
+                    <dd class="col-sm-7 fw-bold text-navy">
+                        <a asp-controller="Beneficiaries" asp-action="Details" asp-route-id="@Model.BeneficiaryId" class="text-navy text-decoration-none">
+                            @Model.BeneficiaryName
+                        </a>
+                    </dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Beneficiary ID</dt>
+                    <dd class="col-sm-7"><code>@Model.BeneficiaryCode</code></dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Assigned Facility</dt>
+                    <dd class="col-sm-7">@Model.CentreName (@Model.District, @Model.StateName)</dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Scheduled Date</dt>
+                    <dd class="col-sm-7 fw-600 @(Model.IsOverdue ? "text-danger" : "text-dark")">
+                        @Model.ScheduledDate.ToString("dd MMMM yyyy")
+                        @if (Model.IsOverdue)
+                        {
+                            <span class="badge bg-danger ms-1">OVERDUE</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Status</dt>
+                    <dd class="col-sm-7">@Model.Status</dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Date Completed</dt>
+                    <dd class="col-sm-7">
+                        @(Model.CompletedDate.HasValue ? Model.CompletedDate.Value.ToString("dd MMMM yyyy") : "Not yet conducted")
+                    </dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Scheduled On</dt>
+                    <dd class="col-sm-7 text-muted small-text">@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt") UTC</dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Last Modified</dt>
+                    <dd class="col-sm-7 text-muted small-text">
+                        @(Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt") + " UTC" : "Never modified")
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes & Recovery Assessment -->
+    <div class="col-lg-7">
+        <div class="panel h-100">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+                <h2 class="panel-title">
+                    <i class="bi bi-file-earmark-medical panel-icon"></i> Follow-up Outcome &amp; Observations
+                </h2>
+                @if (Model.Status == "Completed")
+                {
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                        <i class="bi bi-check-circle me-1"></i>Completed
+                    </span>
+                }
+            </div>
+            <div class="panel-body">
+                @if (string.IsNullOrWhiteSpace(Model.Notes))
+                {
+                    <div class="text-muted fst-italic py-4 text-center">
+                        <i class="bi bi-clipboard-x fs-2 d-block opacity-50 mb-2"></i>
+                        No specific outcome notes recorded.
+                        @if (Model.Status == "Pending")
+                        {
+                            <div class="mt-2">
+                                <a asp-action="Complete" asp-route-id="@Model.FollowUpId" class="btn-primary-nm btn-sm">
+                                    <i class="bi bi-clipboard-check"></i> Record Outcome Notes
+                                </a>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="p-3 bg-light rounded border" style="white-space: pre-wrap; font-size: 0.95rem; line-height: 1.6;">
+@Model.Notes
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -36,18 +36,24 @@ public class DashboardApiController : ControllerBase
             int totalCentres;
             int activeCentres;
             int totalBeneficiaries;
+            int totalCounsellings;
+            int totalInterventions;
 
             if (isAdmin || userCentreId == null)
             {
                 totalCentres = await _context.Centres.CountAsync();
                 activeCentres = await _context.Centres.CountAsync(c => c.IsActive);
                 totalBeneficiaries = await _context.Beneficiaries.CountAsync();
+                totalCounsellings = await _context.CounsellingSessions.CountAsync();
+                totalInterventions = await _context.Interventions.CountAsync();
             }
             else
             {
                 totalCentres = 1;
                 activeCentres = await _context.Centres.CountAsync(c => c.CentreId == userCentreId.Value && c.IsActive);
                 totalBeneficiaries = await _context.Beneficiaries.CountAsync(b => b.CentreId == userCentreId.Value);
+                totalCounsellings = await _context.CounsellingSessions.CountAsync(s => s.Beneficiary != null && s.Beneficiary.CentreId == userCentreId.Value);
+                totalInterventions = await _context.Interventions.CountAsync(i => i.Beneficiary != null && i.Beneficiary.CentreId == userCentreId.Value);
             }
 
             return Ok(new
@@ -55,8 +61,8 @@ public class DashboardApiController : ControllerBase
                 totalCentres,
                 activeCentres,
                 totalBeneficiaries,
-                totalCounsellings = 0, // Phase 6 will wire counselling sessions
-                totalInterventions = 0 // Phase 6 will wire interventions
+                totalCounsellings,
+                totalInterventions
             });
         }
         catch
@@ -170,7 +176,7 @@ public class DashboardApiController : ControllerBase
                     name = c.CentreName,
                     state = c.State != null ? c.State.StateName : string.Empty,
                     beneficiaryCount = c.Beneficiaries.Count,
-                    sessionCount = 0
+                    sessionCount = c.Beneficiaries.SelectMany(b => b.CounsellingSessions).Count()
                 })
                 .ToListAsync();
 
@@ -223,8 +229,29 @@ public class DashboardApiController : ControllerBase
 
     // GET: /api/v1/dashboard/followup-stats
     [HttpGet("followup-stats")]
-    public IActionResult GetFollowupStats()
+    public async Task<IActionResult> GetFollowupStats()
     {
-        return Ok(new { pending = 0, completed = 0, missed = 0, cancelled = 0 });
+        try
+        {
+            var isAdmin = await _authService.IsAdminAsync(User);
+            var userCentreId = await _authService.GetUserCentreIdAsync(User);
+
+            var query = _context.FollowUps.AsQueryable();
+            if (!isAdmin && userCentreId.HasValue)
+            {
+                query = query.Where(f => f.Beneficiary != null && f.Beneficiary.CentreId == userCentreId.Value);
+            }
+
+            var pending = await query.CountAsync(f => f.Status == "Pending");
+            var completed = await query.CountAsync(f => f.Status == "Completed");
+            var missed = await query.CountAsync(f => f.Status == "Missed");
+            var cancelled = await query.CountAsync(f => f.Status == "Cancelled");
+
+            return Ok(new { pending, completed, missed, cancelled });
+        }
+        catch
+        {
+            return Ok(new { pending = 0, completed = 0, missed = 0, cancelled = 0 });
+        }
     }
 }

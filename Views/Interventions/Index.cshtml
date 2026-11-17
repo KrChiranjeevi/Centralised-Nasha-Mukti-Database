@@ -1,16 +1,240 @@
+@model NashaMuktiDB.ViewModels.InterventionIndexViewModel
 @{
-    ViewData["Title"] = "Interventions";
+    ViewData["Title"] = "De-Addiction Interventions";
 }
+
+<!-- Page Header -->
 <div class="page-header">
     <div>
-        <h1 class="page-title"><i class="bi bi-hospital text-teal me-2"></i>Interventions</h1>
-        <p class="page-subtitle">De-addiction interventions and treatment records</p>
+        <h1 class="page-title">De-Addiction Interventions</h1>
+        <p class="page-subtitle">Track medical detoxification, pharmacotherapy, and rehabilitation stages across beneficiaries.</p>
     </div>
-</div>
-<div class="panel panel-body">
-    <div class="empty-state">
-        <span class="empty-state-icon">🏥</span>
-        <div class="empty-state-title">Interventions module coming in Phase 6</div>
+    <div>
+        <a asp-action="Create" class="btn-primary-nm">
+            <i class="bi bi-plus-circle"></i> Record Intervention
+        </a>
     </div>
 </div>
 
+<!-- Quick Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="kpi-label">Total Interventions</div>
+                    <div class="kpi-value text-navy">@Model.TotalInterventionsCount</div>
+                </div>
+                <div class="kpi-icon-wrap bg-light-primary text-teal">
+                    <i class="bi bi-hospital fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="kpi-label">Active / In Progress</div>
+                    <div class="kpi-value text-primary">@Model.InProgressCount</div>
+                </div>
+                <div class="kpi-icon-wrap bg-light-primary text-primary">
+                    <i class="bi bi-arrow-repeat fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="kpi-label">Completed Interventions</div>
+                    <div class="kpi-value text-success">@Model.CompletedCount</div>
+                </div>
+                <div class="kpi-icon-wrap bg-light-success text-success">
+                    <i class="bi bi-check-circle-fill fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filter Form -->
+<div class="panel mb-4">
+    <div class="panel-body">
+        <form asp-action="Index" method="get" class="row g-2 align-items-end">
+            @if (Model.BeneficiaryId.HasValue)
+            {
+                <input type="hidden" name="beneficiaryId" value="@Model.BeneficiaryId" />
+            }
+
+            <div class="col-md-5">
+                <label class="form-label small-text fw-600">Search</label>
+                <div class="search-input-wrap">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" name="search" value="@Model.SearchQuery" 
+                           class="form-control form-control-sm" placeholder="Beneficiary ID, name or responsible staff..." />
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small-text fw-600">Category</label>
+                <select name="interventionType" class="form-select form-select-sm">
+                    <option value="all">All Categories</option>
+                    @foreach (var t in Model.TypesList)
+                    {
+                        <option value="@t.Value" selected="@t.Selected">@t.Text</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small-text fw-600">Status</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="all">All Statuses</option>
+                    @foreach (var st in Model.StatusesList)
+                    {
+                        <option value="@st.Value" selected="@st.Selected">@st.Text</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn-primary-nm btn-sm w-100" title="Apply Filter">
+                    <i class="bi bi-funnel"></i>
+                </button>
+                <a asp-action="Index" class="btn-outline-nm btn-sm" title="Clear Filters">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.BeneficiaryName))
+{
+    <div class="alert alert-info py-2 px-3 small-text d-flex justify-content-between align-items-center mb-3">
+        <span><i class="bi bi-person-badge me-1"></i> Showing interventions for: <strong>@Model.BeneficiaryName</strong></span>
+        <a asp-action="Index" class="btn btn-sm btn-link text-decoration-none p-0">Clear Beneficiary Filter</a>
+    </div>
+}
+
+<!-- Interventions Table Panel -->
+<div class="panel">
+    <div class="panel-header d-flex justify-content-between align-items-center">
+        <h2 class="panel-title">
+            <i class="bi bi-heart-pulse panel-icon"></i> Intervention Records
+        </h2>
+        <span class="text-muted small-text">Page @Model.Interventions.PageIndex of @Model.Interventions.TotalPages (@Model.Interventions.TotalCount total records)</span>
+    </div>
+
+    @if (!Model.Interventions.Any())
+    {
+        <div class="empty-state py-5">
+            <i class="bi bi-heart-pulse empty-state-icon"></i>
+            <div class="empty-state-title">No Interventions Recorded</div>
+            <p class="empty-state-text">No intervention records match your search criteria.</p>
+            <a asp-action="Create" class="btn-primary-nm">Record First Intervention</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Beneficiary</th>
+                        <th>Facility</th>
+                        <th>Intervention Category</th>
+                        <th>Responsible Professional</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var i in Model.Interventions)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-600">@i.ServiceDate.ToString("dd MMM yyyy")</div>
+                            </td>
+                            <td>
+                                <a asp-controller="Beneficiaries" asp-action="Details" asp-route-id="@i.BeneficiaryId" class="fw-bold text-navy text-decoration-none">
+                                    @i.BeneficiaryName
+                                </a>
+                                <div><span class="id-chip small-text">@i.BeneficiaryCode</span></div>
+                            </td>
+                            <td><span class="small-text text-muted">@i.CentreName</span></td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    <i class="bi bi-tag text-teal me-1"></i>@i.InterventionType
+                                </span>
+                            </td>
+                            <td>@(string.IsNullOrWhiteSpace(i.ResponsibleStaffName) ? "—" : i.ResponsibleStaffName)</td>
+                            <td>
+                                @if (i.Status == "Completed")
+                                {
+                                    <span class="badge-status badge-completed">Completed</span>
+                                }
+                                else if (i.Status == "In Progress")
+                                {
+                                    <span class="badge-status badge-active">In Progress</span>
+                                }
+                                else if (i.Status == "Discontinued")
+                                {
+                                    <span class="badge-status badge-inactive">Discontinued</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@i.Status</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@i.InterventionId" class="btn btn-outline-secondary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@i.InterventionId" class="btn btn-outline-secondary" title="Edit Record">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.Interventions.TotalPages > 1)
+        {
+            <div class="panel-body border-top py-3 d-flex justify-content-between align-items-center">
+                <span class="small-text text-muted">Showing page @Model.Interventions.PageIndex of @Model.Interventions.TotalPages</span>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item @(!Model.Interventions.HasPreviousPage ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" 
+                               asp-route-page="@(Model.Interventions.PageIndex - 1)"
+                               asp-route-search="@Model.SearchQuery"
+                               asp-route-beneficiaryId="@Model.BeneficiaryId"
+                               asp-route-interventionType="@Model.InterventionType"
+                               asp-route-status="@Model.Status">Previous</a>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">@Model.Interventions.PageIndex</span>
+                        </li>
+                        <li class="page-item @(!Model.Interventions.HasNextPage ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" 
+                               asp-route-page="@(Model.Interventions.PageIndex + 1)"
+                               asp-route-search="@Model.SearchQuery"
+                               asp-route-beneficiaryId="@Model.BeneficiaryId"
+                               asp-route-interventionType="@Model.InterventionType"
+                               asp-route-status="@Model.Status">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    }
+</div>

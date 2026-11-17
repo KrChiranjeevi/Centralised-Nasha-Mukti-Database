@@ -1,3 +1,4 @@
+using System.Collections;
 using Microsoft.EntityFrameworkCore;
 
 namespace NashaMuktiDB.ViewModels;
@@ -5,7 +6,7 @@ namespace NashaMuktiDB.ViewModels;
 /// <summary>
 /// Generic server-side pagination model.
 /// </summary>
-public class PaginatedList<T>
+public class PaginatedList<T> : IEnumerable<T>
 {
     public List<T> Items { get; }
     public int PageIndex { get; }
@@ -22,6 +23,9 @@ public class PaginatedList<T>
 
     public bool HasPreviousPage => PageIndex > 1;
     public bool HasNextPage => PageIndex < TotalPages;
+
+    public IEnumerator<T> GetEnumerator() => Items.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     public static async Task<PaginatedList<T>> CreateAsync(IQueryable<T> source, int pageIndex, int pageSize)
     {

@@ -150,6 +150,44 @@ public class BeneficiaryService : IBeneficiaryService
             return null;
         }
 
+        var sessions = await _context.CounsellingSessions
+            .Where(s => s.BeneficiaryId == id)
+            .OrderByDescending(s => s.SessionDate)
+            .Select(s => new CounsellingSummaryItem
+            {
+                SessionId = s.SessionId,
+                SessionDate = s.SessionDate,
+                SessionType = s.SessionType,
+                CounsellorName = s.CounsellorName,
+                SessionStatus = s.SessionStatus
+            })
+            .ToListAsync();
+
+        var interventions = await _context.Interventions
+            .Where(i => i.BeneficiaryId == id)
+            .OrderByDescending(i => i.ServiceDate)
+            .Select(i => new InterventionSummaryItem
+            {
+                InterventionId = i.InterventionId,
+                ServiceDate = i.ServiceDate,
+                InterventionType = i.InterventionType,
+                Status = i.Status,
+                ResponsibleStaffName = i.ResponsibleStaffName
+            })
+            .ToListAsync();
+
+        var followUps = await _context.FollowUps
+            .Where(f => f.BeneficiaryId == id)
+            .OrderByDescending(f => f.ScheduledDate)
+            .Select(f => new FollowUpSummaryItem
+            {
+                FollowUpId = f.FollowUpId,
+                ScheduledDate = f.ScheduledDate,
+                Status = f.Status,
+                CompletedDate = f.CompletedDate
+            })
+            .ToListAsync();
+
         return new BeneficiaryDetailsViewModel
         {
             BeneficiaryId = beneficiary.BeneficiaryId,
@@ -166,7 +204,10 @@ public class BeneficiaryService : IBeneficiaryService
             Status = beneficiary.Status,
             CreatedAt = beneficiary.CreatedAt,
             UpdatedAt = beneficiary.UpdatedAt,
-            CanEdit = isAdmin || (userCentreId.HasValue && userCentreId.Value == beneficiary.CentreId)
+            CanEdit = isAdmin || (userCentreId.HasValue && userCentreId.Value == beneficiary.CentreId),
+            CounsellingSessions = sessions,
+            Interventions = interventions,
+            FollowUps = followUps
         };
     }
 

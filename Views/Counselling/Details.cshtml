@@ -1,0 +1,144 @@
+@model NashaMuktiDB.ViewModels.CounsellingDetailsViewModel
+@{
+    ViewData["Title"] = $"Session Details - {Model.BeneficiaryCode}";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="id-chip fs-6">@Model.BeneficiaryCode</span>
+            @if (Model.SessionStatus == "Completed")
+            {
+                <span class="badge-status badge-completed">Completed</span>
+            }
+            else if (Model.SessionStatus == "Scheduled")
+            {
+                <span class="badge-status badge-active">Scheduled</span>
+            }
+            else if (Model.SessionStatus == "Cancelled")
+            {
+                <span class="badge-status badge-inactive">Cancelled</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">@Model.SessionStatus</span>
+            }
+        </div>
+        <h1 class="page-title">Counselling Session Record</h1>
+        <p class="page-subtitle">
+            Conducted on <strong>@Model.SessionDate.ToString("dd MMMM yyyy")</strong> for <strong>@Model.BeneficiaryName</strong>
+        </p>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-action="Index" class="btn-outline-nm">
+            <i class="bi bi-arrow-left"></i> All Sessions
+        </a>
+        <a asp-controller="Beneficiaries" asp-action="Details" asp-route-id="@Model.BeneficiaryId" class="btn-outline-nm">
+            <i class="bi bi-person"></i> Beneficiary Dossier
+        </a>
+        @if (Model.CanEdit)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.SessionId" class="btn-primary-nm">
+                <i class="bi bi-pencil-square"></i> Edit Session
+            </a>
+
+            @if (Model.SessionStatus != "Cancelled")
+            {
+                <form asp-action="Cancel" asp-route-id="@Model.SessionId" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-outline-nm text-danger" 
+                            data-confirm="Are you sure you want to cancel this counselling session?">
+                        <i class="bi bi-x-circle"></i> Cancel Session
+                    </button>
+                </form>
+            }
+        }
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Session & Patient Metadata -->
+    <div class="col-lg-5">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-card-checklist panel-icon"></i> Session Information
+                </h2>
+            </div>
+            <div class="panel-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Beneficiary</dt>
+                    <dd class="col-sm-7 fw-bold text-navy">
+                        <a asp-controller="Beneficiaries" asp-action="Details" asp-route-id="@Model.BeneficiaryId" class="text-navy text-decoration-none">
+                            @Model.BeneficiaryName
+                        </a>
+                    </dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Beneficiary ID</dt>
+                    <dd class="col-sm-7"><code>@Model.BeneficiaryCode</code></dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Assigned Facility</dt>
+                    <dd class="col-sm-7">@Model.CentreName (@Model.District, @Model.StateName)</dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Session Date</dt>
+                    <dd class="col-sm-7 fw-600 text-dark">@Model.SessionDate.ToString("dd MMMM yyyy")</dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Session Type</dt>
+                    <dd class="col-sm-7"><span class="badge bg-light text-dark border">@Model.SessionType</span></dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Counsellor / Therapist</dt>
+                    <dd class="col-sm-7">@(string.IsNullOrWhiteSpace(Model.CounsellorName) ? "Not Specified" : Model.CounsellorName)</dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Status</dt>
+                    <dd class="col-sm-7">@Model.SessionStatus</dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Record Created</dt>
+                    <dd class="col-sm-7 text-muted small-text">@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt") UTC</dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Last Modified</dt>
+                    <dd class="col-sm-7 text-muted small-text">
+                        @(Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt") + " UTC" : "Never modified")
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confidential Clinical Notes -->
+    <div class="col-lg-7">
+        <div class="panel h-100 border-teal">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+                <h2 class="panel-title">
+                    <i class="bi bi-shield-lock text-teal panel-icon"></i> Clinical Notes &amp; Observations
+                </h2>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                    <i class="bi bi-lock-fill me-1"></i>Confidential
+                </span>
+            </div>
+            <div class="panel-body">
+                @if (string.IsNullOrWhiteSpace(Model.Notes))
+                {
+                    <div class="text-muted fst-italic py-4 text-center">
+                        <i class="bi bi-file-earmark-medical fs-2 d-block opacity-50 mb-2"></i>
+                        No specific clinical notes were recorded for this session.
+                    </div>
+                }
+                else
+                {
+                    <div class="p-3 bg-light rounded border clinical-notes-box" style="white-space: pre-wrap; font-size: 0.95rem; line-height: 1.6;">
+@Model.Notes
+                    </div>
+                }
+
+                <div class="alert alert-light border small-text text-muted mt-3 mb-0">
+                    <i class="bi bi-info-circle text-teal me-1"></i>
+                    Clinical records are preserved in compliance with the Ministry of Social Justice &amp; Empowerment medical data confidentiality guidelines.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

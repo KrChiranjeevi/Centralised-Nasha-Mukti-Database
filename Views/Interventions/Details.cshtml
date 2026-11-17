@@ -1,0 +1,136 @@
+@model NashaMuktiDB.ViewModels.InterventionDetailsViewModel
+@{
+    ViewData["Title"] = $"Intervention Details - {Model.BeneficiaryCode}";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="id-chip fs-6">@Model.BeneficiaryCode</span>
+            @if (Model.Status == "Completed")
+            {
+                <span class="badge-status badge-completed">Completed</span>
+            }
+            else if (Model.Status == "In Progress")
+            {
+                <span class="badge-status badge-active">In Progress</span>
+            }
+            else if (Model.Status == "Discontinued")
+            {
+                <span class="badge-status badge-inactive">Discontinued</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">@Model.Status</span>
+            }
+        </div>
+        <h1 class="page-title">@Model.InterventionType</h1>
+        <p class="page-subtitle">
+            Administered for <strong>@Model.BeneficiaryName</strong> at <strong>@Model.CentreName</strong>
+        </p>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-action="Index" class="btn-outline-nm">
+            <i class="bi bi-arrow-left"></i> All Interventions
+        </a>
+        <a asp-controller="Beneficiaries" asp-action="Details" asp-route-id="@Model.BeneficiaryId" class="btn-outline-nm">
+            <i class="bi bi-person"></i> Beneficiary Dossier
+        </a>
+        @if (Model.CanEdit)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.InterventionId" class="btn-primary-nm">
+                <i class="bi bi-pencil-square"></i> Edit Record
+            </a>
+
+            @if (Model.Status != "Discontinued")
+            {
+                <form asp-action="Cancel" asp-route-id="@Model.InterventionId" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-outline-nm text-danger" 
+                            data-confirm="Are you sure you want to discontinue this intervention protocol?">
+                        <i class="bi bi-stop-circle"></i> Discontinue
+                    </button>
+                </form>
+            }
+        }
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Protocol Metadata -->
+    <div class="col-lg-5">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-hospital panel-icon"></i> Intervention Record
+                </h2>
+            </div>
+            <div class="panel-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Beneficiary</dt>
+                    <dd class="col-sm-7 fw-bold text-navy">
+                        <a asp-controller="Beneficiaries" asp-action="Details" asp-route-id="@Model.BeneficiaryId" class="text-navy text-decoration-none">
+                            @Model.BeneficiaryName
+                        </a>
+                    </dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Beneficiary ID</dt>
+                    <dd class="col-sm-7"><code>@Model.BeneficiaryCode</code></dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Administered At</dt>
+                    <dd class="col-sm-7">@Model.CentreName (@Model.District, @Model.StateName)</dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Category</dt>
+                    <dd class="col-sm-7"><span class="badge bg-light text-dark border">@Model.InterventionType</span></dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Service Date</dt>
+                    <dd class="col-sm-7 fw-600">@Model.ServiceDate.ToString("dd MMMM yyyy")</dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Responsible Staff</dt>
+                    <dd class="col-sm-7">@(string.IsNullOrWhiteSpace(Model.ResponsibleStaffName) ? "Not Specified" : Model.ResponsibleStaffName)</dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Status</dt>
+                    <dd class="col-sm-7">@Model.Status</dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Created At</dt>
+                    <dd class="col-sm-7 text-muted small-text">@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt") UTC</dd>
+
+                    <dt class="col-sm-5 text-muted small-text text-uppercase fw-600">Last Modified</dt>
+                    <dd class="col-sm-7 text-muted small-text">
+                        @(Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt") + " UTC" : "Never modified")
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes & Details -->
+    <div class="col-lg-7">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-file-earmark-medical panel-icon"></i> Clinical &amp; Treatment Protocol Notes
+                </h2>
+            </div>
+            <div class="panel-body">
+                @if (string.IsNullOrWhiteSpace(Model.Notes))
+                {
+                    <div class="text-muted fst-italic py-4 text-center">
+                        <i class="bi bi-file-medical fs-2 d-block opacity-50 mb-2"></i>
+                        No additional notes have been logged for this intervention.
+                    </div>
+                }
+                else
+                {
+                    <div class="p-3 bg-light rounded border" style="white-space: pre-wrap; font-size: 0.95rem; line-height: 1.6;">
+@Model.Notes
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+

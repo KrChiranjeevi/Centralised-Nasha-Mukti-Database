@@ -33,3 +33,4 @@ public class CreateUserViewModel
     [Display(Name = "Assigned Centre")]
     public int? CentreId { get; set; }
 }
+

@@ -58,4 +58,9 @@ public class Beneficiary
     // Navigation property: Belongs to one Centre
     [ForeignKey(nameof(CentreId))]
     public virtual Centre? Centre { get; set; }
+
+    // Navigation properties for clinical modules
+    public virtual ICollection<CounsellingSession> CounsellingSessions { get; set; } = new List<CounsellingSession>();
+    public virtual ICollection<Intervention> Interventions { get; set; } = new List<Intervention>();
+    public virtual ICollection<FollowUp> FollowUps { get; set; } = new List<FollowUp>();
 }

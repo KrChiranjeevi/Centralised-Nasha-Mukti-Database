@@ -32,3 +32,4 @@ public class ApplicationUser : IdentityUser
     [ForeignKey(nameof(CentreId))]
     public virtual Centre? Centre { get; set; }
 }
+

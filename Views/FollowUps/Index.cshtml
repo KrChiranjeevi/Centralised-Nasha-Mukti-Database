@@ -1,16 +1,208 @@
+@model NashaMuktiDB.ViewModels.FollowUpIndexViewModel
 @{
-    ViewData["Title"] = "Follow-Ups";
+    ViewData["Title"] = "Follow-up Management";
 }
+
+<!-- Page Header -->
 <div class="page-header">
     <div>
-        <h1 class="page-title"><i class="bi bi-calendar-check text-teal me-2"></i>Follow-Ups</h1>
-        <p class="page-subtitle">Track and manage beneficiary follow-up appointments</p>
+        <h1 class="page-title">Follow-up Management</h1>
+        <p class="page-subtitle">Schedule post-treatment check-ins, track ongoing recovery milestones, and flag overdue cases.</p>
     </div>
-</div>
-<div class="panel panel-body">
-    <div class="empty-state">
-        <span class="empty-state-icon">📅</span>
-        <div class="empty-state-title">Follow-up module coming in Phase 6</div>
+    <div>
+        <a asp-action="Create" class="btn-primary-nm">
+            <i class="bi bi-calendar-plus"></i> Schedule Follow-up
+        </a>
     </div>
 </div>
 
+<!-- Filter Pills / Metric Tabs -->
+<div class="d-flex gap-2 flex-wrap mb-4">
+    <a asp-action="Index" asp-route-filterTab="all" asp-route-search="@Model.SearchQuery" 
+       class="btn @(Model.FilterTab == "all" ? "btn-primary-nm" : "btn-outline-nm")">
+        <i class="bi bi-list-check me-1"></i> All Records
+        <span class="badge bg-light text-dark ms-1">@Model.TotalCount</span>
+    </a>
+    <a asp-action="Index" asp-route-filterTab="pending" asp-route-search="@Model.SearchQuery" 
+       class="btn @(Model.FilterTab == "pending" ? "btn-primary-nm" : "btn-outline-nm")">
+        <i class="bi bi-clock-history me-1"></i> Upcoming / Pending
+        <span class="badge bg-light text-dark ms-1">@Model.PendingCount</span>
+    </a>
+    <a asp-action="Index" asp-route-filterTab="overdue" asp-route-search="@Model.SearchQuery" 
+       class="btn @(Model.FilterTab == "overdue" ? "btn-danger" : "btn-outline-danger")">
+        <i class="bi bi-exclamation-triangle-fill me-1"></i> Overdue Follow-ups
+        <span class="badge bg-danger text-white ms-1">@Model.OverdueCount</span>
+    </a>
+    <a asp-action="Index" asp-route-filterTab="completed" asp-route-search="@Model.SearchQuery" 
+       class="btn @(Model.FilterTab == "completed" ? "btn-primary-nm" : "btn-outline-nm")">
+        <i class="bi bi-check-circle-fill me-1"></i> Completed Outcomes
+        <span class="badge bg-light text-dark ms-1">@Model.CompletedCount</span>
+    </a>
+</div>
+
+<!-- Search Bar -->
+<div class="panel mb-4">
+    <div class="panel-body">
+        <form asp-action="Index" method="get" class="row g-2 align-items-center">
+            <input type="hidden" name="filterTab" value="@Model.FilterTab" />
+            <div class="col-md-9">
+                <div class="search-input-wrap">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" name="search" value="@Model.SearchQuery" 
+                           class="form-control form-control-sm" placeholder="Search by beneficiary ID or name..." />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="all">All Statuses</option>
+                    @foreach (var st in Model.StatusesList)
+                    {
+                        <option value="@st.Value" selected="@st.Selected">@st.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn-primary-nm btn-sm w-100" title="Search">
+                    <i class="bi bi-funnel"></i>
+                </button>
+                <a asp-action="Index" asp-route-filterTab="@Model.FilterTab" class="btn-outline-nm btn-sm" title="Clear">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Follow-ups Table Panel -->
+<div class="panel">
+    <div class="panel-header d-flex justify-content-between align-items-center">
+        <h2 class="panel-title">
+            <i class="bi bi-calendar2-check panel-icon"></i> Follow-up Appointments
+        </h2>
+        <span class="text-muted small-text">Page @Model.FollowUps.PageIndex of @Model.FollowUps.TotalPages (@Model.FollowUps.TotalCount total records)</span>
+    </div>
+
+    @if (!Model.FollowUps.Any())
+    {
+        <div class="empty-state py-5">
+            <i class="bi bi-calendar-x empty-state-icon"></i>
+            <div class="empty-state-title">No Follow-ups Found</div>
+            <p class="empty-state-text">No follow-up records found matching this view.</p>
+            <a asp-action="Create" class="btn-primary-nm">Schedule a Follow-up</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Scheduled Date</th>
+                        <th>Beneficiary</th>
+                        <th>Facility</th>
+                        <th>Status</th>
+                        <th>Completed Date</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var f in Model.FollowUps)
+                    {
+                        <tr class="@(f.IsOverdue ? "table-danger-subtle" : "")">
+                            <td>
+                                <div class="fw-600 @(f.IsOverdue ? "text-danger" : "")">
+                                    @f.ScheduledDate.ToString("dd MMM yyyy")
+                                    @if (f.IsOverdue)
+                                    {
+                                        <span class="badge bg-danger ms-1 small-text">OVERDUE</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <a asp-controller="Beneficiaries" asp-action="Details" asp-route-id="@f.BeneficiaryId" class="fw-bold text-navy text-decoration-none">
+                                    @f.BeneficiaryName
+                                </a>
+                                <div><span class="id-chip small-text">@f.BeneficiaryCode</span></div>
+                            </td>
+                            <td><span class="small-text text-muted">@f.CentreName</span></td>
+                            <td>
+                                @if (f.Status == "Completed")
+                                {
+                                    <span class="badge-status badge-completed">Completed</span>
+                                }
+                                else if (f.Status == "Pending")
+                                {
+                                    if (f.IsOverdue)
+                                    {
+                                        <span class="badge-status badge-inactive">Pending (Overdue)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-status badge-active">Pending</span>
+                                    }
+                                }
+                                else if (f.Status == "Missed")
+                                {
+                                    <span class="badge bg-warning text-dark border">Missed</span>
+                                }
+                                else if (f.Status == "Cancelled")
+                                {
+                                    <span class="badge-status badge-inactive">Cancelled</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@f.Status</span>
+                                }
+                            </td>
+                            <td>
+                                @(f.CompletedDate.HasValue ? f.CompletedDate.Value.ToString("dd MMM yyyy") : "—")
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    @if (f.Status == "Pending")
+                                    {
+                                        <a asp-action="Complete" asp-route-id="@f.FollowUpId" class="btn btn-sm btn-outline-success" title="Record Outcome">
+                                            <i class="bi bi-clipboard-check"></i> Record Outcome
+                                        </a>
+                                    }
+                                    <a asp-action="Details" asp-route-id="@f.FollowUpId" class="btn btn-outline-secondary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.FollowUps.TotalPages > 1)
+        {
+            <div class="panel-body border-top py-3 d-flex justify-content-between align-items-center">
+                <span class="small-text text-muted">Showing page @Model.FollowUps.PageIndex of @Model.FollowUps.TotalPages</span>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item @(!Model.FollowUps.HasPreviousPage ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" 
+                               asp-route-page="@(Model.FollowUps.PageIndex - 1)"
+                               asp-route-search="@Model.SearchQuery"
+                               asp-route-filterTab="@Model.FilterTab"
+                               asp-route-status="@Model.Status">Previous</a>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">@Model.FollowUps.PageIndex</span>
+                        </li>
+                        <li class="page-item @(!Model.FollowUps.HasNextPage ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" 
+                               asp-route-page="@(Model.FollowUps.PageIndex + 1)"
+                               asp-route-search="@Model.SearchQuery"
+                               asp-route-filterTab="@Model.FilterTab"
+                               asp-route-status="@Model.Status">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    }
+</div>

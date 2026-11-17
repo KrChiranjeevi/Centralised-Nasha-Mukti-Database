@@ -58,6 +58,14 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddScoped<ICentreAuthorizationService, CentreAuthorizationService>();
 builder.Services.AddScoped<ICentreService, CentreService>();
 builder.Services.AddScoped<IBeneficiaryService, BeneficiaryService>();
+builder.Services.AddScoped<ICounsellingService, CounsellingService>();
+builder.Services.AddScoped<IInterventionService, InterventionService>();
+builder.Services.AddScoped<IFollowUpService, FollowUpService>();
+builder.Services.AddScoped<ICentreService, CentreService>();
+builder.Services.AddScoped<IBeneficiaryService, BeneficiaryService>();
+builder.Services.AddScoped<ICounsellingService, CounsellingService>();
+builder.Services.AddScoped<IInterventionService, InterventionService>();
+builder.Services.AddScoped<IFollowUpService, FollowUpService>();
 
 // ── 5. MVC + Razor Views ─────────────────────────────────────
 builder.Services.AddControllersWithViews();

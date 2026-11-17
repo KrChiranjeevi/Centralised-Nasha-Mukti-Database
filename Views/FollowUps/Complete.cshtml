@@ -1,0 +1,97 @@
+@model NashaMuktiDB.ViewModels.CompleteFollowUpViewModel
+@{
+    ViewData["Title"] = $"Record Outcome - {Model.BeneficiaryCode}";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Record Follow-up Outcome</h1>
+        <p class="page-subtitle">Document check-in results and ongoing recovery assessment for <strong>@Model.BeneficiaryName</strong>.</p>
+    </div>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.FollowUpId" class="btn-outline-nm">
+            <i class="bi bi-arrow-left"></i> Back to Details
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-clipboard2-check panel-icon"></i> Check-in Completion Form
+                </h2>
+            </div>
+            <div class="panel-body">
+                <form asp-action="Complete" asp-route-id="@Model.FollowUpId" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="FollowUpId" />
+                    <input type="hidden" asp-for="BeneficiaryId" />
+                    <input type="hidden" asp-for="BeneficiaryCode" />
+                    <input type="hidden" asp-for="BeneficiaryName" />
+                    <input type="hidden" asp-for="CentreName" />
+                    <input type="hidden" asp-for="ScheduledDate" />
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <!-- Follow-up Overview Card -->
+                    <div class="alert alert-light border mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="small-text text-muted text-uppercase fw-600 d-block">Beneficiary</span>
+                                <strong class="fs-6 text-navy">@Model.BeneficiaryName</strong>
+                                <span class="id-chip ms-2">@Model.BeneficiaryCode</span>
+                                <div class="small-text text-muted"><i class="bi bi-hospital me-1"></i>@Model.CentreName</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="small-text text-muted d-block">Scheduled For</span>
+                                <strong class="text-teal">@Model.ScheduledDate.ToString("dd MMM yyyy")</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="CompletedDate" class="form-label fw-600">Date Completed / Contacted <span class="text-danger">*</span></label>
+                            <input asp-for="CompletedDate" type="date" class="form-control" />
+                            <span asp-validation-for="CompletedDate" class="text-danger small-text"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Status" class="form-label fw-600">Outcome Status <span class="text-danger">*</span></label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="Completed">Completed (Check-in Successful)</option>
+                                <option value="Missed">Missed (Unable to Reach / No Show)</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger small-text"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Notes" class="form-label fw-600">
+                            Outcome &amp; Recovery Assessment Notes
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-2">Confidential</span>
+                        </label>
+                        <textarea asp-for="Notes" class="form-control" rows="5" 
+                                  placeholder="Document beneficiary sobriety status, relapse risk, employment status, support system stability, or required further interventions..."></textarea>
+                        <span asp-validation-for="Notes" class="text-danger small-text"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a asp-action="Index" class="btn-outline-nm">Cancel</a>
+                        <button type="submit" class="btn-primary-nm">
+                            <i class="bi bi-check2-circle"></i> Save Follow-up Outcome
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

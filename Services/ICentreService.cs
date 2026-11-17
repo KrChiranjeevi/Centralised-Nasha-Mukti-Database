@@ -19,3 +19,4 @@ public interface ICentreService
     Task<int> GetActiveCentresCountAsync();
     Task<int> GetTotalCentresCountAsync();
 }
+

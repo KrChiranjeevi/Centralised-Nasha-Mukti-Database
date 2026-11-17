@@ -71,3 +71,4 @@ public class CentreAuthorizationService : ICentreAuthorizationService
         return beneficiaryCentreId == userCentreId.Value;
     }
 }
+

@@ -517,6 +517,285 @@ namespace NashaMuktiDB.Migrations
                         });
                 });
 
+            modelBuilder.Entity("NashaMuktiDB.Models.CounsellingSession", b =>
+                {
+                    b.Property<int>("SessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SessionId"));
+
+                    b.Property<int>("BeneficiaryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CounsellorName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("SessionDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("SessionStatus")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("Completed");
+
+                    b.Property<string>("SessionType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("SessionId");
+
+                    b.HasIndex("BeneficiaryId")
+                        .HasDatabaseName("IX_CounsellingSessions_BeneficiaryId");
+
+                    b.HasIndex("SessionDate")
+                        .HasDatabaseName("IX_CounsellingSessions_SessionDate");
+
+                    b.HasIndex("SessionStatus")
+                        .HasDatabaseName("IX_CounsellingSessions_SessionStatus");
+
+                    b.HasIndex("SessionType")
+                        .HasDatabaseName("IX_CounsellingSessions_SessionType");
+
+                    b.ToTable("CounsellingSessions", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            SessionId = 1,
+                            BeneficiaryId = 1,
+                            CounsellorName = "Dr. Harvinder Singh (Psychologist)",
+                            CreatedAt = new DateTime(2026, 2, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Notes = "Initial motivational interviewing completed. Beneficiary expressed readiness for rehabilitation.",
+                            SessionDate = new DateTime(2026, 2, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            SessionStatus = "Completed",
+                            SessionType = "Individual"
+                        },
+                        new
+                        {
+                            SessionId = 2,
+                            BeneficiaryId = 1,
+                            CounsellorName = "Dr. Harvinder Singh (Psychologist)",
+                            CreatedAt = new DateTime(2026, 2, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Notes = "Family session conducted with spouse. Established positive household recovery support framework.",
+                            SessionDate = new DateTime(2026, 2, 12, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            SessionStatus = "Completed",
+                            SessionType = "Family"
+                        },
+                        new
+                        {
+                            SessionId = 3,
+                            BeneficiaryId = 2,
+                            CounsellorName = "Dr. Manpreet Kaur (Counsellor)",
+                            CreatedAt = new DateTime(2026, 2, 8, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Notes = "Cognitive behavioral therapy intro. Identified primary emotional triggers and coping strategies.",
+                            SessionDate = new DateTime(2026, 2, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            SessionStatus = "Completed",
+                            SessionType = "Individual"
+                        },
+                        new
+                        {
+                            SessionId = 4,
+                            BeneficiaryId = 4,
+                            CounsellorName = "Sanjay Jha (Social Worker)",
+                            CreatedAt = new DateTime(2026, 2, 15, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Notes = "Participated in peer support group. Shared challenges and received positive group feedback.",
+                            SessionDate = new DateTime(2026, 2, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            SessionStatus = "Completed",
+                            SessionType = "Group"
+                        });
+                });
+
+            modelBuilder.Entity("NashaMuktiDB.Models.FollowUp", b =>
+                {
+                    b.Property<int>("FollowUpId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FollowUpId"));
+
+                    b.Property<int>("BeneficiaryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("ScheduledDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("Pending");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("FollowUpId");
+
+                    b.HasIndex("BeneficiaryId")
+                        .HasDatabaseName("IX_FollowUps_BeneficiaryId");
+
+                    b.HasIndex("ScheduledDate")
+                        .HasDatabaseName("IX_FollowUps_ScheduledDate");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_FollowUps_Status");
+
+                    b.ToTable("FollowUps", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            FollowUpId = 1,
+                            BeneficiaryId = 1,
+                            CreatedAt = new DateTime(2026, 2, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Notes = "1-month post-intake recovery evaluation scheduled.",
+                            ScheduledDate = new DateTime(2026, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = "Pending"
+                        },
+                        new
+                        {
+                            FollowUpId = 2,
+                            BeneficiaryId = 2,
+                            CompletedDate = new DateTime(2026, 2, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 2, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Notes = "Routine bi-weekly check-in completed. Beneficiary reports good adherence to program.",
+                            ScheduledDate = new DateTime(2026, 2, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = "Completed"
+                        },
+                        new
+                        {
+                            FollowUpId = 3,
+                            BeneficiaryId = 4,
+                            CreatedAt = new DateTime(2026, 2, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Notes = "Beneficiary was unable to attend due to travel. Re-contact initiated by field team.",
+                            ScheduledDate = new DateTime(2026, 2, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = "Missed"
+                        });
+                });
+
+            modelBuilder.Entity("NashaMuktiDB.Models.Intervention", b =>
+                {
+                    b.Property<int>("InterventionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InterventionId"));
+
+                    b.Property<int>("BeneficiaryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("InterventionType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("ResponsibleStaffName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("ServiceDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("In Progress");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("InterventionId");
+
+                    b.HasIndex("BeneficiaryId")
+                        .HasDatabaseName("IX_Interventions_BeneficiaryId");
+
+                    b.HasIndex("InterventionType")
+                        .HasDatabaseName("IX_Interventions_InterventionType");
+
+                    b.HasIndex("ServiceDate")
+                        .HasDatabaseName("IX_Interventions_ServiceDate");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Interventions_Status");
+
+                    b.ToTable("Interventions", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            InterventionId = 1,
+                            BeneficiaryId = 1,
+                            CreatedAt = new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            InterventionType = "Medical Detoxification",
+                            Notes = "5-day inpatient clinical detox successfully administered without acute complications.",
+                            ResponsibleStaffName = "Dr. Rajesh Sharma (Medical Officer)",
+                            ServiceDate = new DateTime(2026, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = "Completed"
+                        },
+                        new
+                        {
+                            InterventionId = 2,
+                            BeneficiaryId = 1,
+                            CreatedAt = new DateTime(2026, 2, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            InterventionType = "Psychosocial Rehabilitation",
+                            Notes = "Enrolled in 60-day residential psychosocial recovery module.",
+                            ResponsibleStaffName = "Navchetan Rehabilitation Team",
+                            ServiceDate = new DateTime(2026, 2, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = "In Progress"
+                        },
+                        new
+                        {
+                            InterventionId = 3,
+                            BeneficiaryId = 4,
+                            CreatedAt = new DateTime(2026, 2, 13, 0, 0, 0, 0, DateTimeKind.Utc),
+                            InterventionType = "Medical Detoxification",
+                            Notes = "Supervised pharmacotherapy detox provided at Patna facility.",
+                            ResponsibleStaffName = "Dr. P.K. Sinha (Physician)",
+                            ServiceDate = new DateTime(2026, 2, 13, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = "Completed"
+                        });
+                });
+
             modelBuilder.Entity("NashaMuktiDB.Models.State", b =>
                 {
                     b.Property<int>("StateId")
@@ -677,6 +956,51 @@ namespace NashaMuktiDB.Migrations
                         .HasConstraintName("FK_Centres_States");
 
                     b.Navigation("State");
+                });
+
+            modelBuilder.Entity("NashaMuktiDB.Models.CounsellingSession", b =>
+                {
+                    b.HasOne("NashaMuktiDB.Models.Beneficiary", "Beneficiary")
+                        .WithMany("CounsellingSessions")
+                        .HasForeignKey("BeneficiaryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_CounsellingSessions_Beneficiaries");
+
+                    b.Navigation("Beneficiary");
+                });
+
+            modelBuilder.Entity("NashaMuktiDB.Models.FollowUp", b =>
+                {
+                    b.HasOne("NashaMuktiDB.Models.Beneficiary", "Beneficiary")
+                        .WithMany("FollowUps")
+                        .HasForeignKey("BeneficiaryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_FollowUps_Beneficiaries");
+
+                    b.Navigation("Beneficiary");
+                });
+
+            modelBuilder.Entity("NashaMuktiDB.Models.Intervention", b =>
+                {
+                    b.HasOne("NashaMuktiDB.Models.Beneficiary", "Beneficiary")
+                        .WithMany("Interventions")
+                        .HasForeignKey("BeneficiaryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_Interventions_Beneficiaries");
+
+                    b.Navigation("Beneficiary");
+                });
+
+            modelBuilder.Entity("NashaMuktiDB.Models.Beneficiary", b =>
+                {
+                    b.Navigation("CounsellingSessions");
+
+                    b.Navigation("FollowUps");
+
+                    b.Navigation("Interventions");
                 });
 
             modelBuilder.Entity("NashaMuktiDB.Models.Centre", b =>

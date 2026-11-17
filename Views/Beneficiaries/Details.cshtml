@@ -135,43 +135,236 @@
     </div>
 </div>
 
-<!-- ── CLINICAL & SERVICE HISTORY PLACEHOLDERS (Phase 6) ──────── -->
-<div class="row g-3">
+<!-- ── CLINICAL & TREATMENT DOSSIER (Phase 6 Integrated) ─────── -->
+<div class="row g-3 mb-4">
     <!-- Counselling Sessions -->
     <div class="col-lg-6">
-        <div class="panel">
-            <div class="panel-header">
+        <div class="panel h-100">
+            <div class="panel-header d-flex justify-content-between align-items-center">
                 <h2 class="panel-title">
                     <i class="bi bi-chat-heart panel-icon"></i> Counselling Sessions
+                    <span class="badge bg-light text-dark border ms-2">@Model.CounsellingSessions.Count</span>
                 </h2>
-                <span class="badge bg-light text-muted border">Phase 6 Module</span>
+                @if (Model.CanEdit)
+                {
+                    <a asp-controller="Counselling" asp-action="Create" asp-route-beneficiaryId="@Model.BeneficiaryId" class="btn-primary-nm btn-sm">
+                        <i class="bi bi-plus"></i> Log Session
+                    </a>
+                }
             </div>
-            <div class="panel-body">
-                <div class="text-center py-4 text-muted small-text">
-                    <i class="bi bi-chat-square-text fs-2 d-block text-secondary opacity-50 mb-2"></i>
-                    <div>Counselling sessions tracking will be managed in Phase 6.</div>
-                    <small>Multiple counselling sessions and confidential notes will link here.</small>
-                </div>
+            <div class="panel-body p-0">
+                @if (!Model.CounsellingSessions.Any())
+                {
+                    <div class="text-center py-4 text-muted small-text">
+                        <i class="bi bi-chat-square-text fs-2 d-block text-secondary opacity-50 mb-2"></i>
+                        <div>No counselling sessions recorded yet.</div>
+                        <small>Click "Log Session" to document the initial evaluation.</small>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 small-text">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Counsellor</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var s in Model.CounsellingSessions)
+                                {
+                                    <tr>
+                                        <td class="fw-600">@s.SessionDate.ToString("dd MMM yyyy")</td>
+                                        <td><span class="badge bg-light text-dark border">@s.SessionType</span></td>
+                                        <td>@(string.IsNullOrWhiteSpace(s.CounsellorName) ? "—" : s.CounsellorName)</td>
+                                        <td>
+                                            @if (s.SessionStatus == "Completed")
+                                            {
+                                                <span class="badge-status badge-completed">Completed</span>
+                                            }
+                                            else if (s.SessionStatus == "Scheduled")
+                                            {
+                                                <span class="badge-status badge-active">Scheduled</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge-status badge-inactive">@s.SessionStatus</span>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            <a asp-controller="Counselling" asp-action="Details" asp-route-id="@s.SessionId" class="btn btn-sm btn-outline-secondary py-0 px-2" title="View Confidential Notes">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
             </div>
         </div>
     </div>
 
-    <!-- Interventions & Follow-ups -->
+    <!-- Treatment Interventions -->
     <div class="col-lg-6">
-        <div class="panel">
-            <div class="panel-header">
+        <div class="panel h-100">
+            <div class="panel-header d-flex justify-content-between align-items-center">
                 <h2 class="panel-title">
-                    <i class="bi bi-hospital panel-icon"></i> De-Addiction Interventions
+                    <i class="bi bi-heart-pulse panel-icon"></i> Treatment Interventions
+                    <span class="badge bg-light text-dark border ms-2">@Model.Interventions.Count</span>
                 </h2>
-                <span class="badge bg-light text-muted border">Phase 6 Module</span>
+                @if (Model.CanEdit)
+                {
+                    <a asp-controller="Interventions" asp-action="Create" asp-route-beneficiaryId="@Model.BeneficiaryId" class="btn-primary-nm btn-sm">
+                        <i class="bi bi-plus"></i> Record
+                    </a>
+                }
             </div>
-            <div class="panel-body">
-                <div class="text-center py-4 text-muted small-text">
-                    <i class="bi bi-heart-pulse fs-2 d-block text-secondary opacity-50 mb-2"></i>
-                    <div>Medical and behavioral interventions will be managed in Phase 6.</div>
-                    <small>Detoxification, therapy stages, and follow-ups will link here.</small>
-                </div>
+            <div class="panel-body p-0">
+                @if (!Model.Interventions.Any())
+                {
+                    <div class="text-center py-4 text-muted small-text">
+                        <i class="bi bi-heart-pulse fs-2 d-block text-secondary opacity-50 mb-2"></i>
+                        <div>No treatment interventions recorded yet.</div>
+                        <small>Click "Record" to log medical detox or rehabilitation protocols.</small>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 small-text">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Professional</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var i in Model.Interventions)
+                                {
+                                    <tr>
+                                        <td class="fw-600">@i.ServiceDate.ToString("dd MMM yyyy")</td>
+                                        <td><span class="badge bg-light text-dark border">@i.InterventionType</span></td>
+                                        <td>@(string.IsNullOrWhiteSpace(i.ResponsibleStaffName) ? "—" : i.ResponsibleStaffName)</td>
+                                        <td>
+                                            @if (i.Status == "Completed")
+                                            {
+                                                <span class="badge-status badge-completed">Completed</span>
+                                            }
+                                            else if (i.Status == "In Progress")
+                                            {
+                                                <span class="badge-status badge-active">In Progress</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge-status badge-inactive">@i.Status</span>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            <a asp-controller="Interventions" asp-action="Details" asp-route-id="@i.InterventionId" class="btn btn-sm btn-outline-secondary py-0 px-2" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Follow-up Timeline & Schedule -->
+<div class="panel mb-4">
+    <div class="panel-header d-flex justify-content-between align-items-center">
+        <h2 class="panel-title">
+            <i class="bi bi-calendar2-check panel-icon"></i> Follow-up Appointments &amp; Recovery Monitoring
+            <span class="badge bg-light text-dark border ms-2">@Model.FollowUps.Count</span>
+        </h2>
+        @if (Model.CanEdit)
+        {
+            <a asp-controller="FollowUps" asp-action="Create" asp-route-beneficiaryId="@Model.BeneficiaryId" class="btn-primary-nm btn-sm">
+                <i class="bi bi-calendar-plus"></i> Schedule Follow-up
+            </a>
+        }
+    </div>
+    <div class="panel-body p-0">
+        @if (!Model.FollowUps.Any())
+        {
+            <div class="text-center py-4 text-muted small-text">
+                <i class="bi bi-calendar-x fs-2 d-block text-secondary opacity-50 mb-2"></i>
+                <div>No follow-up appointments scheduled yet.</div>
+                <small>Schedule post-treatment check-ins to monitor long-term recovery.</small>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small-text">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Scheduled Date</th>
+                            <th>Status</th>
+                            <th>Date Completed</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var f in Model.FollowUps)
+                        {
+                            <tr class="@(f.IsOverdue ? "table-danger-subtle" : "")">
+                                <td class="fw-600 @(f.IsOverdue ? "text-danger" : "")">
+                                    @f.ScheduledDate.ToString("dd MMMM yyyy")
+                                    @if (f.IsOverdue)
+                                    {
+                                        <span class="badge bg-danger ms-1">OVERDUE</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (f.Status == "Completed")
+                                    {
+                                        <span class="badge-status badge-completed">Completed</span>
+                                    }
+                                    else if (f.Status == "Pending")
+                                    {
+                                        <span class="badge-status badge-active">Pending</span>
+                                    }
+                                    else if (f.Status == "Missed")
+                                    {
+                                        <span class="badge bg-warning text-dark border">Missed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-status badge-inactive">@f.Status</span>
+                                    }
+                                </td>
+                                <td>@(f.CompletedDate.HasValue ? f.CompletedDate.Value.ToString("dd MMM yyyy") : "—")</td>
+                                <td class="text-end">
+                                    @if (f.Status == "Pending" && Model.CanEdit)
+                                    {
+                                        <a asp-controller="FollowUps" asp-action="Complete" asp-route-id="@f.FollowUpId" class="btn btn-sm btn-outline-success py-0 px-2 me-1" title="Record Outcome">
+                                            <i class="bi bi-clipboard-check"></i> Complete
+                                        </a>
+                                    }
+                                    <a asp-controller="FollowUps" asp-action="Details" asp-route-id="@f.FollowUpId" class="btn btn-sm btn-outline-secondary py-0 px-2" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
 </div>
