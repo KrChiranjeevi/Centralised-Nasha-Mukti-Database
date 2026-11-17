@@ -1,0 +1,29 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=tcp:<YOUR_PROD_SQL_SERVER>.database.windows.net,1433;Initial Catalog=NashaMuktiProdDB;Persist Security Info=False;User ID=<DB_ADMIN_USER>;Password=<STRONG_DB_PASSWORD>;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore": "Error"
+    }
+  },
+  "AllowedHosts": "nashamukti.yourdomain.gov.in;localhost",
+  "AppSettings": {
+    "SystemName": "Centralised Nasha Mukti Database",
+    "Ministry": "Ministry of Social Justice and Empowerment",
+    "AuditLogEnabled": true,
+    "PageSize": 15
+  },
+  "Jwt": {
+    "Key": "<GENERATE_64_BYTE_CRYPTO_SECURE_KEY_OR_SET_ENV_JWT_KEY>",
+    "Issuer": "https://nashamukti.yourdomain.gov.in",
+    "Audience": "https://nashamukti.yourdomain.gov.in",
+    "ExpiryHours": 8
+  },
+  "Security": {
+    "DefaultAdminEmail": "admin@nashamukti.gov.in",
+    "DefaultAdminPassword": "<STRONG_INITIAL_ADMIN_PASSWORD_OR_USE_ENV_NMD_ADMIN_PASSWORD>"
+  }
+}

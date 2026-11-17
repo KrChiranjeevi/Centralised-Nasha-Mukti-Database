@@ -22,6 +22,7 @@ public static class DatabaseSeeder
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+            var hostEnv = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Hosting.IHostEnvironment>();
 
             // 1. Check if database can be reached
             bool canConnect = await context.Database.CanConnectAsync();
@@ -77,49 +78,52 @@ public static class DatabaseSeeder
                 }
             }
 
-            // 5. Seed Sample Centre Staff 1 (Amritsar Centre, CentreId = 1)
-            var staff1Email = "staff.amritsar@nmd.gov.in";
-            if (await userManager.FindByEmailAsync(staff1Email) == null)
+            // 5. Seed Sample Centre Staff (Development/Staging Only)
+            if (!hostEnv.IsProduction())
             {
-                var staff1 = new ApplicationUser
+                var staff1Email = "staff.amritsar@nmd.gov.in";
+                if (await userManager.FindByEmailAsync(staff1Email) == null)
                 {
-                    UserName = staff1Email,
-                    Email = staff1Email,
-                    FullName = "Amritsar Centre Staff",
-                    CentreId = 1,
-                    IsActive = true,
-                    EmailConfirmed = true,
-                    CreatedAt = DateTime.UtcNow
-                };
+                    var staff1 = new ApplicationUser
+                    {
+                        UserName = staff1Email,
+                        Email = staff1Email,
+                        FullName = "Amritsar Centre Staff",
+                        CentreId = 1,
+                        IsActive = true,
+                        EmailConfirmed = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
 
-                var result = await userManager.CreateAsync(staff1, "Staff@NMD2026!");
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(staff1, RoleCentreStaff);
-                    logger.LogInformation("Sample CentreStaff account created: {Email} (CentreId = 1)", staff1Email);
+                    var result = await userManager.CreateAsync(staff1, "Staff@NMD2026!");
+                    if (result.Succeeded)
+                    {
+                        await userManager.AddToRoleAsync(staff1, RoleCentreStaff);
+                        logger.LogInformation("Sample CentreStaff account created: {Email} (CentreId = 1)", staff1Email);
+                    }
                 }
-            }
 
-            // 6. Seed Sample Centre Staff 2 (Patna Centre, CentreId = 3)
-            var staff2Email = "staff.patna@nmd.gov.in";
-            if (await userManager.FindByEmailAsync(staff2Email) == null)
-            {
-                var staff2 = new ApplicationUser
+                // 6. Seed Sample Centre Staff 2 (Patna Centre, CentreId = 3)
+                var staff2Email = "staff.patna@nmd.gov.in";
+                if (await userManager.FindByEmailAsync(staff2Email) == null)
                 {
-                    UserName = staff2Email,
-                    Email = staff2Email,
-                    FullName = "Patna Centre Staff",
-                    CentreId = 3,
-                    IsActive = true,
-                    EmailConfirmed = true,
-                    CreatedAt = DateTime.UtcNow
-                };
+                    var staff2 = new ApplicationUser
+                    {
+                        UserName = staff2Email,
+                        Email = staff2Email,
+                        FullName = "Patna Centre Staff",
+                        CentreId = 3,
+                        IsActive = true,
+                        EmailConfirmed = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
 
-                var result = await userManager.CreateAsync(staff2, "Staff@NMD2026!");
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(staff2, RoleCentreStaff);
-                    logger.LogInformation("Sample CentreStaff account created: {Email} (CentreId = 3)", staff2Email);
+                    var result = await userManager.CreateAsync(staff2, "Staff@NMD2026!");
+                    if (result.Succeeded)
+                    {
+                        await userManager.AddToRoleAsync(staff2, RoleCentreStaff);
+                        logger.LogInformation("Sample CentreStaff account created: {Email} (CentreId = 3)", staff2Email);
+                    }
                 }
             }
         }
