@@ -1,0 +1,30 @@
+﻿@model ErrorViewModel
+@{
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
+    ViewData["Title"] = "Error";
+}
+
+<div class="error-page">
+    <div class="error-box">
+        <div class="error-code">⚠</div>
+        <h1 class="error-title">Something went wrong</h1>
+        <p class="error-text">
+            An unexpected error occurred. Please try again.
+            If the problem persists, contact the system administrator.
+        </p>
+        @if (Model?.ShowRequestId == true)
+        {
+            <p class="small-text" style="color:var(--gray-400);">
+                Request ID: <code>@Model.RequestId</code>
+            </p>
+        }
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="/" class="btn-primary-nm">
+                <i class="bi bi-house-fill"></i> Go Home
+            </a>
+            <a href="javascript:history.back()" class="btn-outline-nm">
+                <i class="bi bi-arrow-left"></i> Go Back
+            </a>
+        </div>
+    </div>
+</div>

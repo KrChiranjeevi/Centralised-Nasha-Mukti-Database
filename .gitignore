@@ -1,0 +1,28 @@
+# Nasha Mukti DB — .gitignore
+
+## .NET / ASP.NET Core
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/settings.json
+*.swp
+
+## Secrets — NEVER commit these
+appsettings.Production.json
+secrets.json
+*.pfx
+
+## Rider / JetBrains
+.idea/
+
+## NuGet
+packages/
+*.nupkg
+project.lock.json
+
+## OS
+.DS_Store
+Thumbs.db
+desktop.ini

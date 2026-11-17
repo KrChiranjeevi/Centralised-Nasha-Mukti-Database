@@ -1,0 +1,77 @@
+@{
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
+    ViewData["Title"] = "Sign In";
+}
+
+<div class="login-page">
+    <div class="login-card">
+
+        <!-- Logo -->
+        <div class="login-logo">
+            <div class="login-logo-icon" aria-hidden="true">🏥</div>
+            <div>
+                <p class="login-title">Nasha Mukti DB</p>
+                <p class="login-subtitle">Ministry of Social Justice &amp; Empowerment</p>
+            </div>
+        </div>
+
+        <h1 class="login-heading">Sign in to your account</h1>
+
+        @if (!string.IsNullOrEmpty(ViewData["Error"] as string))
+        {
+            <div class="alert-nm alert-danger-nm mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+                <span>@ViewData["Error"]</span>
+            </div>
+        }
+
+        <form method="post" asp-controller="Account" asp-action="Login"
+              data-loading="true" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label for="email" class="form-label-nm">
+                    Email Address <span class="required">*</span>
+                </label>
+                <input type="email" id="email" name="Email"
+                       class="form-control-nm" placeholder="you@example.gov.in"
+                       autocomplete="email" required autofocus
+                       value="@ViewData["Email"]" />
+                <span class="field-validation-error" data-valmsg-for="Email"></span>
+            </div>
+
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="password" class="form-label-nm mb-0">
+                        Password <span class="required">*</span>
+                    </label>
+                </div>
+                <input type="password" id="password" name="Password"
+                       class="form-control-nm" placeholder="Enter your password"
+                       autocomplete="current-password" required />
+                <span class="field-validation-error" data-valmsg-for="Password"></span>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <label class="d-flex align-items-center gap-2 small-text" style="cursor:pointer;">
+                    <input type="checkbox" name="RememberMe" value="true"
+                           style="accent-color:var(--teal-600);" />
+                    Remember me
+                </label>
+            </div>
+
+            <button type="submit" class="btn-primary-nm w-100 justify-content-center py-3">
+                <i class="bi bi-box-arrow-in-right"></i>
+                Sign In
+            </button>
+        </form>
+
+        <div class="login-footer mt-4">
+            <i class="bi bi-shield-lock text-teal me-1"></i>
+            Secure access — Authorized personnel only<br />
+            <small class="mt-1 d-block" style="color:var(--gray-400);">
+                This is an academic demonstration system. Use synthetic data only.
+            </small>
+        </div>
+    </div>
+</div>
