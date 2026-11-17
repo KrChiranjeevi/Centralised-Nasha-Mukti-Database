@@ -1,5 +1,10 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using NashaMuktiDB.Data;
 using NashaMuktiDB.Models;
 using NashaMuktiDB.Services;
@@ -41,7 +46,29 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// ── 3. Cookie Authentication Settings ────────────────────────
+// ── 3. Dual Authentication (Cookie for MVC + JWT Bearer for Web API) ───
+builder.Services.AddAuthentication()
+.AddJwtBearer(options =>
+{
+    var jwtKey = builder.Configuration["Jwt:Key"] ?? "NashaMuktiPlatform_SecureJwtSecretKey_2026_AcademicDemoKey99!";
+    var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "NashaMuktiPortal";
+    var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "NashaMuktiClients";
+
+    options.SaveToken = true;
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        ValidateIssuer = true,
+        ValidIssuer = jwtIssuer,
+        ValidateAudience = true,
+        ValidAudience = jwtAudience,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.FromMinutes(5)
+    };
+});
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
@@ -54,6 +81,18 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
+// Dual Authorization: Authenticate transparently via Cookie OR JWT Bearer
+builder.Services.AddAuthorization(options =>
+{
+    var defaultPolicy = new AuthorizationPolicyBuilder(
+        IdentityConstants.ApplicationScheme,
+        JwtBearerDefaults.AuthenticationScheme)
+        .RequireAuthenticatedUser()
+        .Build();
+
+    options.DefaultPolicy = defaultPolicy;
+});
+
 // ── 4. Application Services & Dependency Injection ───────────
 builder.Services.AddScoped<ICentreAuthorizationService, CentreAuthorizationService>();
 builder.Services.AddScoped<ICentreService, CentreService>();
@@ -62,6 +101,7 @@ builder.Services.AddScoped<ICounsellingService, CounsellingService>();
 builder.Services.AddScoped<IInterventionService, InterventionService>();
 builder.Services.AddScoped<IFollowUpService, FollowUpService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 // ── 5. MVC + Razor Views ─────────────────────────────────────
 builder.Services.AddControllersWithViews();
@@ -82,11 +122,36 @@ builder.Services.AddSession(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new()
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Nasha Mukti DB API",
+        Title = "Centralised Nasha Mukti Database API",
         Version = "v1",
-        Description = "REST API for the Centralised Nasha Mukti Database — Academic Demonstration"
+        Description = "MoSJE Nasha Mukti Platform RESTful Web API for facility management, intake tracking, clinical interventions, and recovery analytics."
+    });
+
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter JWT Bearer token obtained from /api/v1/auth/login"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 });
 
@@ -112,13 +177,15 @@ if (!app.Environment.IsDevelopment())
 else
 {
     app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Nasha Mukti DB API v1");
-        c.RoutePrefix = "api-docs";
-    });
 }
+
+// Enable Swagger UI across environments for academic viva demonstration
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Nasha Mukti API v1");
+    c.RoutePrefix = "swagger";
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

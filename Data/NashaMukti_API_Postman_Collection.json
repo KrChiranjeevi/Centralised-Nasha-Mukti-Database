@@ -1,0 +1,1131 @@
+{
+	"info": {
+		"_postman_id": "c1f7a402-9988-4721-8273-0987654321ab",
+		"name": "Centralised Nasha Mukti Database API (MoSJE)",
+		"description": "Comprehensive RESTful Web API collection for the INT402 Centralised Nasha Mukti Database project. Supports JWT Bearer authorization, facility isolation, intake management, clinical sessions, and recovery analytics.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "centreId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "beneficiaryId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "sessionId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "interventionId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "followUpId",
+			"value": "1",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Admin Login (Get Bearer Token)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set('token', jsonData.token);",
+									"    console.log('Saved JWT Bearer Token to collection variable');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@nashamukti.gov.in\",\n  \"password\": \"Admin@123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Authenticates as Global Administrator and automatically stores the JWT Bearer token into {{token}}."
+					}
+				},
+				{
+					"name": "Centre Staff Login (Amritsar)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set('token', jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"staff.amritsar@nashamukti.gov.in\",\n  \"password\": \"Staff@123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Authenticates as facility staff locked to Centre 1 (Navchetan Centre, Amritsar)."
+					}
+				},
+				{
+					"name": "Get Current User Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"me"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Centres Management",
+			"item": [
+				{
+					"name": "List Centres",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/centres?activeOnly=true&page=1&pageSize=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"centres"
+							],
+							"query": [
+								{
+									"key": "activeOnly",
+									"value": "true"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Centre by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/centres/{{centreId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"centres",
+								"{{centreId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Centre (Admin Only)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"centreName\": \"Jalandhar Regional De-Addiction Centre\",\n  \"stateId\": 1,\n  \"district\": \"Jalandhar\",\n  \"address\": \"Civil Hospital Complex, GT Road, Jalandhar\",\n  \"contactNumber\": \"0181-2244660\",\n  \"email\": \"jalandhar.rehab@punjab.gov.in\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/centres",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"centres"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Centre",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"centreName\": \"Navchetan De-Addiction & Rehabilitation Centre (Updated)\",\n  \"stateId\": 1,\n  \"district\": \"Amritsar\",\n  \"address\": \"Circular Road, Near Civil Lines, Amritsar\",\n  \"contactNumber\": \"0183-2567890\",\n  \"email\": \"amritsar.rehab@punjab.gov.in\",\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/centres/{{centreId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"centres",
+								"{{centreId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Deactivate Centre (Soft Delete)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/centres/{{centreId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"centres",
+								"{{centreId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Beneficiaries",
+			"item": [
+				{
+					"name": "List Beneficiaries",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/beneficiaries?status=Active&page=1&pageSize=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"beneficiaries"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "Active"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Beneficiary by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/beneficiaries/{{beneficiaryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"beneficiaries",
+								"{{beneficiaryId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Register Beneficiary",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Gurpreet Singh\",\n  \"centreId\": 1,\n  \"registrationDate\": \"2026-11-18\",\n  \"dateOfBirth\": \"1996-05-14\",\n  \"gender\": \"Male\",\n  \"contactNumber\": \"9876543210\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/beneficiaries",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"beneficiaries"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Beneficiary Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Gurpreet Singh\",\n  \"centreId\": 1,\n  \"registrationDate\": \"2026-11-18\",\n  \"dateOfBirth\": \"1996-05-14\",\n  \"gender\": \"Male\",\n  \"contactNumber\": \"9876543210\",\n  \"status\": \"Active\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/beneficiaries/{{beneficiaryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"beneficiaries",
+								"{{beneficiaryId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Deactivate Beneficiary (Controlled Discharge)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/beneficiaries/{{beneficiaryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"beneficiaries",
+								"{{beneficiaryId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Counselling Sessions",
+			"item": [
+				{
+					"name": "List Counselling Sessions (Notes Protected)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/counselling?sessionType=Individual Counselling&page=1&pageSize=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"counselling"
+							],
+							"query": [
+								{
+									"key": "sessionType",
+									"value": "Individual Counselling"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Session by ID (With Confidential Notes)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/counselling/{{sessionId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"counselling",
+								"{{sessionId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Counselling Session",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"beneficiaryId\": 1,\n  \"sessionDate\": \"2026-11-18\",\n  \"sessionType\": \"Relapse Prevention\",\n  \"counsellorName\": \"Dr. Harpreet Kaur\",\n  \"sessionStatus\": \"Completed\",\n  \"notes\": \"Patient demonstrated positive emotional regulation. Identified trigger environments and rehearsed avoidance techniques.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/counselling",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"counselling"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Counselling Session",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sessionDate\": \"2026-11-18\",\n  \"sessionType\": \"Relapse Prevention\",\n  \"counsellorName\": \"Dr. Harpreet Kaur\",\n  \"sessionStatus\": \"Completed\",\n  \"notes\": \"Updated: Confirmed strong family support integration.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/counselling/{{sessionId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"counselling",
+								"{{sessionId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Interventions",
+			"item": [
+				{
+					"name": "List Interventions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/interventions?status=In Progress",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"interventions"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "In Progress"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Intervention by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/interventions/{{interventionId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"interventions",
+								"{{interventionId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Intervention Protocol",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"beneficiaryId\": 1,\n  \"interventionType\": \"Psychosocial Rehabilitation\",\n  \"serviceDate\": \"2026-11-18\",\n  \"status\": \"In Progress\",\n  \"responsibleStaffName\": \"Social Worker Rajesh\",\n  \"notes\": \"Enrolled in carpentry vocational skill training to facilitate economic independence.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/interventions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"interventions"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Intervention",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"interventionType\": \"Psychosocial Rehabilitation\",\n  \"serviceDate\": \"2026-11-18\",\n  \"status\": \"Completed\",\n  \"responsibleStaffName\": \"Social Worker Rajesh\",\n  \"notes\": \"Vocational module successfully completed with attendance excellence certificate.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/interventions/{{interventionId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"interventions",
+								"{{interventionId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Follow-ups",
+			"item": [
+				{
+					"name": "List Follow-ups (Pending & Overdue)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/followups?filterTab=pending",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"followups"
+							],
+							"query": [
+								{
+									"key": "filterTab",
+									"value": "pending"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Follow-up by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/followups/{{followUpId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"followups",
+								"{{followUpId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Schedule Follow-up Appointment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"beneficiaryId\": 1,\n  \"scheduledDate\": \"2026-12-02\",\n  \"status\": \"Pending\",\n  \"notes\": \"Two-week check-in to assess cravings and evaluate peer support meeting attendance.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/followups",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"followups"
+							]
+						}
+					}
+				},
+				{
+					"name": "Record Follow-up Outcome",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"scheduledDate\": \"2026-12-02\",\n  \"status\": \"Completed\",\n  \"completedDate\": \"2026-12-02\",\n  \"notes\": \"Check-in conducted successfully. Patient maintains complete abstinence and reported zero cravings.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/followups/{{followUpId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"followups",
+								"{{followUpId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Reports & Analytics",
+			"item": [
+				{
+					"name": "Get Summary KPIs (9 Indicators)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/reports/summary",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"reports",
+								"summary"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get State-wise Report",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/reports/state-wise",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"reports",
+								"state-wise"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Centre-wise Performance Report",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/reports/centre-wise",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"reports",
+								"centre-wise"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "8. Security & Negative Tests",
+			"item": [
+				{
+					"name": "401 Unauthorized Test (No Token)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/beneficiaries",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"beneficiaries"
+							]
+						},
+						"description": "Expected status: 401 Unauthorized"
+					}
+				},
+				{
+					"name": "400 Bad Request (Invalid Data)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"\",\n  \"centreId\": -1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/beneficiaries",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"beneficiaries"
+							]
+						},
+						"description": "Expected status: 400 Bad Request with field validation errors."
+					}
+				},
+				{
+					"name": "404 Not Found (Missing Centre)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/centres/999999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"centres",
+								"999999"
+							]
+						},
+						"description": "Expected status: 404 Not Found."
+					}
+				}
+			]
+		}
+	]
+}
