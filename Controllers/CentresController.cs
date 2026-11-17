@@ -7,3 +7,4 @@ public class CentresController : Controller
 {
     public IActionResult Index() { ViewData["Title"] = "Centres"; return View(); }
 }
+

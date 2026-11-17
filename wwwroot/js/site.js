@@ -1,4 +1,4 @@
-﻿// NashaMukti JS — Sidebar toggle, confirmations, alerts
+// NashaMukti JS — Sidebar toggle, confirmations, alerts
 (function () {
     'use strict';
 

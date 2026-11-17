@@ -1,11 +1,26 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using NashaMuktiDB.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ── Database Context Configuration (Entity Framework Core) ──
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorNumbersToAdd: null);
+    });
+});
 
 // ── MVC + Razor Views ────────────────────────────────────────
 builder.Services.AddControllersWithViews();
 
-// ── Cookie Authentication (Phase 3 will add Identity + EF) ──
+// ── Cookie Authentication (Phase 3 will add Identity) ────────
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -33,7 +48,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// ── Swagger (will expand in Phase 8) ─────────────────────────
+// ── Swagger ──────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -45,10 +60,19 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// ── HttpContext accessor (for audit logging later) ───────────
+// ── HttpContext accessor ─────────────────────────────────────
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
+
+// ── Database Initialization / Seeding Check (Non-blocking) ───
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    var dbContext = services.GetRequiredService<ApplicationDbContext>();
+    await DatabaseSeeder.SeedAsync(dbContext, logger);
+}
 
 // ── Error Handling ───────────────────────────────────────────
 if (!app.Environment.IsDevelopment())
@@ -80,12 +104,10 @@ app.UseSession();
 app.UseStatusCodePagesWithReExecute("/Home/Status/{0}");
 
 // ── Routes ───────────────────────────────────────────────────
-// API routes
 app.MapControllerRoute(
     name: "api",
     pattern: "api/v1/{controller}/{action=Index}/{id?}");
 
-// MVC default route
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Dashboard}/{action=Index}/{id?}");

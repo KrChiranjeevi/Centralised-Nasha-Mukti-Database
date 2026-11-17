@@ -37,3 +37,4 @@ public class AccountController : Controller
         return View("~/Views/Shared/AccessDenied.cshtml");
     }
 }
+

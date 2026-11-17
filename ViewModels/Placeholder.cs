@@ -5,3 +5,4 @@ namespace NashaMuktiDB.ViewModels
     /// <summary>Placeholder to satisfy _ViewImports until real ViewModels are added in Phase 2+.</summary>
     public sealed class ViewModelPlaceholder { }
 }
+

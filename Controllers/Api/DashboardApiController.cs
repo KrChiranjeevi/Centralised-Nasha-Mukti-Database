@@ -64,3 +64,4 @@ public class DashboardApiController : ControllerBase
         return Ok(new { pending = 0, completed = 0, missed = 0, cancelled = 0 });
     }
 }
+

@@ -8,3 +8,4 @@ public class AdminController : Controller
     public IActionResult Users()      { ViewData["Title"] = "User Management"; return View(); }
     public IActionResult AuditLog()   { ViewData["Title"] = "Audit Log"; return View(); }
 }
+

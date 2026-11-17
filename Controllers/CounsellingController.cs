@@ -7,3 +7,4 @@ public class CounsellingController : Controller
 {
     public IActionResult Index() { ViewData["Title"] = "Counselling Sessions"; return View(); }
 }
+

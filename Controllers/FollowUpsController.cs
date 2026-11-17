@@ -7,3 +7,4 @@ public class FollowUpsController : Controller
 {
     public IActionResult Index() { ViewData["Title"] = "Follow-Ups"; return View(); }
 }
+
