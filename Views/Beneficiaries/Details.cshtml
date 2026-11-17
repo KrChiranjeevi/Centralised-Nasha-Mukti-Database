@@ -1,15 +1,177 @@
+@model NashaMuktiDB.ViewModels.BeneficiaryDetailsViewModel
 @{
-    ViewData["Title"] = "Beneficiary Details";
+    ViewData["Title"] = $"{Model.FullName} ({Model.BeneficiaryCode})";
 }
+
+<!-- Page Header -->
 <div class="page-header">
     <div>
-        <h1 class="page-title">Beneficiary Details</h1>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="id-chip fs-6">@Model.BeneficiaryCode</span>
+            @if (Model.Status == "Active")
+            {
+                <span class="badge-status badge-active">Active</span>
+            }
+            else if (Model.Status == "Discharged")
+            {
+                <span class="badge-status badge-completed">Discharged</span>
+            }
+            else
+            {
+                <span class="badge-status badge-inactive">@Model.Status</span>
+            }
+        </div>
+        <h1 class="page-title">@Model.FullName</h1>
+        <p class="page-subtitle">
+            <i class="bi bi-hospital text-teal me-1"></i>Enrolled at <strong>@Model.CentreName</strong> (@Model.District, @Model.StateName)
+        </p>
     </div>
-</div>
-<div class="panel panel-body">
-    <div class="empty-state">
-        <span class="empty-state-icon">👤</span>
-        <div class="empty-state-title">Coming in Phase 5</div>
+
+    <!-- Actions -->
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-action="Index" class="btn-outline-nm">
+            <i class="bi bi-arrow-left"></i> Back to Beneficiaries
+        </a>
+        @if (Model.CanEdit)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.BeneficiaryId" class="btn-primary-nm">
+                <i class="bi bi-pencil-square"></i> Edit Profile
+            </a>
+
+            <!-- Controlled Status Toggle / Deactivation -->
+            <form asp-action="ToggleStatus" asp-route-id="@Model.BeneficiaryId" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" 
+                        class="btn-outline-nm @(Model.Status == "Active" ? "text-danger" : "text-success")"
+                        data-confirm="Are you sure you want to change status to '@(Model.Status == "Active" ? "Inactive" : "Active")'? All counselling and treatment history will be preserved.">
+                    <i class="bi @(Model.Status == "Active" ? "bi-person-slash" : "bi-person-check")"></i>
+                    @(Model.Status == "Active" ? "Deactivate" : "Activate")
+                </button>
+            </form>
+        }
     </div>
 </div>
 
+<!-- ── BENEFICIARY PROFILE SUMMARY ───────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-person-vcard panel-icon"></i> Intake Profile
+                </h2>
+            </div>
+            <div class="panel-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Full Name</dt>
+                    <dd class="col-sm-8 fw-bold text-navy">@Model.FullName</dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Beneficiary ID</dt>
+                    <dd class="col-sm-8"><code>@Model.BeneficiaryCode</code></dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Registration Date</dt>
+                    <dd class="col-sm-8">@Model.RegistrationDate.ToString("dd MMMM yyyy")</dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Date of Birth</dt>
+                    <dd class="col-sm-8">
+                        @(Model.DateOfBirth.HasValue ? Model.DateOfBirth.Value.ToString("dd MMM yyyy") : "Not Recorded")
+                        @if (Model.Age.HasValue)
+                        {
+                            <span class="badge bg-light text-dark border ms-1">@Model.Age years</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Gender</dt>
+                    <dd class="col-sm-8">@(Model.Gender ?? "Not Specified")</dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Contact Number</dt>
+                    <dd class="col-sm-8">@(Model.ContactNumber ?? "Not Specified")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-hospital panel-icon"></i> Facility &amp; Status Info
+                </h2>
+            </div>
+            <div class="panel-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Assigned Facility</dt>
+                    <dd class="col-sm-8 fw-bold text-navy">
+                        <a asp-controller="Centres" asp-action="Details" asp-route-id="@Model.CentreId" class="text-teal">
+                            @Model.CentreName
+                        </a>
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">District / State</dt>
+                    <dd class="col-sm-8">@Model.District, @Model.StateName</dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Current Status</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.Status == "Active")
+                        {
+                            <span class="badge-status badge-active">Active (In Treatment / Care)</span>
+                        }
+                        else
+                        {
+                            <span class="badge-status badge-inactive">@Model.Status</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Record Created</dt>
+                    <dd class="col-sm-8 text-muted">@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt") UTC</dd>
+
+                    <dt class="col-sm-4 text-muted small-text text-uppercase fw-600">Last Updated</dt>
+                    <dd class="col-sm-8 text-muted">
+                        @(Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt") + " UTC" : "Never modified")
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── CLINICAL & SERVICE HISTORY PLACEHOLDERS (Phase 6) ──────── -->
+<div class="row g-3">
+    <!-- Counselling Sessions -->
+    <div class="col-lg-6">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-chat-heart panel-icon"></i> Counselling Sessions
+                </h2>
+                <span class="badge bg-light text-muted border">Phase 6 Module</span>
+            </div>
+            <div class="panel-body">
+                <div class="text-center py-4 text-muted small-text">
+                    <i class="bi bi-chat-square-text fs-2 d-block text-secondary opacity-50 mb-2"></i>
+                    <div>Counselling sessions tracking will be managed in Phase 6.</div>
+                    <small>Multiple counselling sessions and confidential notes will link here.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interventions & Follow-ups -->
+    <div class="col-lg-6">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-hospital panel-icon"></i> De-Addiction Interventions
+                </h2>
+                <span class="badge bg-light text-muted border">Phase 6 Module</span>
+            </div>
+            <div class="panel-body">
+                <div class="text-center py-4 text-muted small-text">
+                    <i class="bi bi-heart-pulse fs-2 d-block text-secondary opacity-50 mb-2"></i>
+                    <div>Medical and behavioral interventions will be managed in Phase 6.</div>
+                    <small>Detoxification, therapy stages, and follow-ups will link here.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

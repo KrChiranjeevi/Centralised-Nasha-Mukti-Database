@@ -57,6 +57,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 // ── 4. Application Services & Dependency Injection ───────────
 builder.Services.AddScoped<ICentreAuthorizationService, CentreAuthorizationService>();
 builder.Services.AddScoped<ICentreService, CentreService>();
+builder.Services.AddScoped<IBeneficiaryService, BeneficiaryService>();
 
 // ── 5. MVC + Razor Views ─────────────────────────────────────
 builder.Services.AddControllersWithViews();
