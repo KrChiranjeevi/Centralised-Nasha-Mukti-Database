@@ -1,0 +1,143 @@
+@model NashaMuktiDB.ViewModels.CreateUserViewModel
+@{
+    ViewData["Title"] = "Add Authorized User";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-person-plus-fill text-teal me-2"></i>Add Authorized User
+        </h1>
+        <p class="page-subtitle">
+            Create an administrator or assign a staff member to a specific Nasha Mukti Kendra
+        </p>
+    </div>
+    <div>
+        <a asp-action="Users" class="btn-outline-nm">
+            <i class="bi bi-arrow-left"></i> Back to Users
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-shield-lock panel-icon"></i> User Account Details
+                </h2>
+            </div>
+
+            <div class="panel-body">
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert-nm alert-danger-nm mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+                        <div>
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <div>@error.ErrorMessage</div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <form asp-action="CreateUser" method="post" data-loading="true">
+                    @Html.AntiForgeryToken()
+
+                    <div class="row g-3">
+                        <!-- Full Name -->
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label-nm">
+                                Full Name <span class="required">*</span>
+                            </label>
+                            <input asp-for="FullName" class="form-control-nm" placeholder="e.g. Dr. Ramesh Sharma" required />
+                            <span asp-validation-for="FullName" class="field-validation-error"></span>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label-nm">
+                                Official Email Address <span class="required">*</span>
+                            </label>
+                            <input asp-for="Email" type="email" class="form-control-nm" placeholder="user@nmd.gov.in" required />
+                            <span asp-validation-for="Email" class="field-validation-error"></span>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="col-md-6">
+                            <label asp-for="Password" class="form-label-nm">
+                                Password <span class="required">*</span>
+                            </label>
+                            <input asp-for="Password" class="form-control-nm" placeholder="At least 8 chars, 1 digit, 1 symbol" required />
+                            <span asp-validation-for="Password" class="field-validation-error"></span>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="col-md-6">
+                            <label asp-for="ConfirmPassword" class="form-label-nm">
+                                Confirm Password <span class="required">*</span>
+                            </label>
+                            <input asp-for="ConfirmPassword" class="form-control-nm" placeholder="Re-enter password" required />
+                            <span asp-validation-for="ConfirmPassword" class="field-validation-error"></span>
+                        </div>
+
+                        <!-- Role -->
+                        <div class="col-md-6">
+                            <label asp-for="Role" class="form-label-nm">
+                                Role / Permission Level <span class="required">*</span>
+                            </label>
+                            <select asp-for="Role" id="userRoleSelect" class="form-control-nm" required>
+                                <option value="CentreStaff">Centre Staff (Restricted to assigned centre)</option>
+                                <option value="Admin">System Administrator (National / Cross-centre access)</option>
+                            </select>
+                            <span asp-validation-for="Role" class="field-validation-error"></span>
+                        </div>
+
+                        <!-- Centre (Conditional) -->
+                        <div class="col-md-6" id="centreSelectionGroup">
+                            <label asp-for="CentreId" class="form-label-nm">
+                                Assigned Centre <span class="required" id="centreRequiredStar">*</span>
+                            </label>
+                            <select asp-for="CentreId" asp-items="ViewBag.CentresList" class="form-control-nm">
+                                <option value="">-- Select Nasha Mukti Kendra --</option>
+                            </select>
+                            <span asp-validation-for="CentreId" class="field-validation-error"></span>
+                            <small class="text-muted d-block mt-1">
+                                Centre Staff can only access beneficiaries and records at their assigned facility.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                        <a asp-action="Users" class="btn-outline-nm">Cancel</a>
+                        <button type="submit" class="btn-primary-nm">
+                            <i class="bi bi-check-circle-fill"></i> Create Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const roleSelect = document.getElementById('userRoleSelect');
+            const centreGroup = document.getElementById('centreSelectionGroup');
+
+            function toggleCentre() {
+                if (roleSelect.value === 'Admin') {
+                    centreGroup.style.display = 'none';
+                } else {
+                    centreGroup.style.display = 'block';
+                }
+            }
+
+            roleSelect.addEventListener('change', toggleCentre);
+            toggleCentre();
+        });
+    </script>
+}

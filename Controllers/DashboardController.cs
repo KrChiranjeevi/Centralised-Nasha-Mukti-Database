@@ -1,11 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace NashaMuktiDB.Controllers;
 
 /// <summary>
-/// Dashboard controller — Phase 7 will wire real DB queries.
-/// For now returns the view which loads data via API calls from JavaScript.
+/// Dashboard controller — Accessible to all authenticated users (Admin and CentreStaff).
 /// </summary>
+[Authorize]
 public class DashboardController : Controller
 {
     public IActionResult Index()
@@ -14,4 +15,3 @@ public class DashboardController : Controller
         return View();
     }
 }
-

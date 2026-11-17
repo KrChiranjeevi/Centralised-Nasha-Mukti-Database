@@ -1,10 +1,12 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NashaMuktiDB.Data;
+using NashaMuktiDB.Models;
+using NashaMuktiDB.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Database Context Configuration (Entity Framework Core) ──
+// ── 1. Database Context Configuration (Entity Framework Core) ──
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -17,29 +19,51 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     });
 });
 
-// ── MVC + Razor Views ────────────────────────────────────────
+// ── 2. ASP.NET Core Identity Configuration ───────────────────
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    // Password security policy
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+
+    // Lockout settings
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
+
+    // User settings
+    options.User.RequireUniqueEmail = true;
+    options.SignIn.RequireConfirmedAccount = false;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+// ── 3. Cookie Authentication Settings ────────────────────────
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.SlidingExpiration = true;
+    options.Cookie.Name = "NashaMukti.Auth";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+});
+
+// ── 4. Application Services & Dependency Injection ───────────
+builder.Services.AddScoped<ICentreAuthorizationService, CentreAuthorizationService>();
+
+// ── 5. MVC + Razor Views ─────────────────────────────────────
 builder.Services.AddControllersWithViews();
 
-// ── Cookie Authentication (Phase 3 will add Identity) ────────
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath        = "/Account/Login";
-        options.LogoutPath       = "/Account/Logout";
-        options.AccessDeniedPath = "/Account/AccessDenied";
-        options.ExpireTimeSpan   = TimeSpan.FromHours(8);
-        options.SlidingExpiration = true;
-        options.Cookie.Name      = "NashaMukti.Auth";
-        options.Cookie.HttpOnly  = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-    });
-
-builder.Services.AddAuthorization();
-
-// ── CSRF ─────────────────────────────────────────────────────
+// ── 6. CSRF Antiforgery ──────────────────────────────────────
 builder.Services.AddAntiforgery(o => o.HeaderName = "X-CSRF-TOKEN");
 
-// ── Session ──────────────────────────────────────────────────
+// ── 7. Distributed Cache & Session ───────────────────────────
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -48,33 +72,32 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// ── Swagger ──────────────────────────────────────────────────
+// ── 8. Swagger / OpenAPI ─────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new()
     {
-        Title       = "Nasha Mukti DB API",
-        Version     = "v1",
+        Title = "Nasha Mukti DB API",
+        Version = "v1",
         Description = "REST API for the Centralised Nasha Mukti Database — Academic Demonstration"
     });
 });
 
-// ── HttpContext accessor ─────────────────────────────────────
+// ── 9. HttpContext accessor ──────────────────────────────────
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-// ── Database Initialization / Seeding Check (Non-blocking) ───
+// ── 10. Database Initialization & Seeding ────────────────────
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var logger = services.GetRequiredService<ILogger<Program>>();
-    var dbContext = services.GetRequiredService<ApplicationDbContext>();
-    await DatabaseSeeder.SeedAsync(dbContext, logger);
+    await DatabaseSeeder.SeedAsync(app.Services, logger);
 }
 
-// ── Error Handling ───────────────────────────────────────────
+// ── 11. Middleware Pipeline ──────────────────────────────────
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -95,15 +118,16 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
+// Authentication MUST precede Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseSession();
 
-// ── Status Code Pages ────────────────────────────────────────
+// Status Code Pages
 app.UseStatusCodePagesWithReExecute("/Home/Status/{0}");
 
-// ── Routes ───────────────────────────────────────────────────
+// ── 12. Endpoint Routes ──────────────────────────────────────
 app.MapControllerRoute(
     name: "api",
     pattern: "api/v1/{controller}/{action=Index}/{id?}");

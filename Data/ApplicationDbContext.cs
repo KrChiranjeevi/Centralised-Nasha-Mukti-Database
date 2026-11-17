@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NashaMuktiDB.Models;
 
@@ -5,9 +7,9 @@ namespace NashaMuktiDB.Data;
 
 /// <summary>
 /// Entity Framework Core database context for the Centralised Nasha Mukti Database.
-/// Implements Code-First configuration, relationships, constraints, and indexes.
+/// Integrates ASP.NET Core Identity with application entities (States, Centres, Beneficiaries).
 /// </summary>
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole, string>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -20,9 +22,35 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // ── 1. Identity Base Configuration (REQUIRED for Identity tables) ──
         base.OnModelCreating(modelBuilder);
 
-        // ── State Entity Configuration ───────────────────────────────
+        // ── 2. ApplicationUser Configuration ──────────────────────────────
+        modelBuilder.Entity<ApplicationUser>(entity =>
+        {
+            entity.Property(u => u.FullName)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            entity.Property(u => u.IsActive)
+                .HasDefaultValue(true);
+
+            entity.Property(u => u.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+
+            // Relationship: Centre 1 -> * ApplicationUser (Staff)
+            // DeleteBehavior.Restrict: Prevents accidental deletion of centre if users are associated
+            entity.HasOne(u => u.Centre)
+                .WithMany(c => c.StaffMembers)
+                .HasForeignKey(u => u.CentreId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_AspNetUsers_Centres");
+
+            entity.HasIndex(u => u.CentreId)
+                .HasDatabaseName("IX_AspNetUsers_CentreId");
+        });
+
+        // ── 3. State Entity Configuration ─────────────────────────────────
         modelBuilder.Entity<State>(entity =>
         {
             entity.ToTable("States");
@@ -40,7 +68,7 @@ public class ApplicationDbContext : DbContext
                 .HasDatabaseName("IX_States_StateName");
         });
 
-        // ── Centre Entity Configuration ──────────────────────────────
+        // ── 4. Centre Entity Configuration ────────────────────────────────
         modelBuilder.Entity<Centre>(entity =>
         {
             entity.ToTable("Centres");
@@ -81,7 +109,7 @@ public class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_Centres_States");
 
-            // Indexes for common queries (filter by state, district, active status)
+            // Indexes for common queries
             entity.HasIndex(c => c.StateId)
                 .HasDatabaseName("IX_Centres_StateId");
 
@@ -95,7 +123,7 @@ public class ApplicationDbContext : DbContext
                 .HasDatabaseName("IX_Centres_IsActive");
         });
 
-        // ── Beneficiary Entity Configuration ─────────────────────────
+        // ── 5. Beneficiary Entity Configuration ───────────────────────────
         modelBuilder.Entity<Beneficiary>(entity =>
         {
             entity.ToTable("Beneficiaries");
@@ -137,7 +165,7 @@ public class ApplicationDbContext : DbContext
                 .HasDatabaseName("UQ_Beneficiaries_BeneficiaryCode");
 
             // Relationship: Centre 1 -> * Beneficiary
-            // DeleteBehavior.Restrict: Protects historical patient records from accidental centre deletion
+            // DeleteBehavior.Restrict: Protects historical patient records
             entity.HasOne(b => b.Centre)
                 .WithMany(c => c.Beneficiaries)
                 .HasForeignKey(b => b.CentreId)
@@ -158,13 +186,12 @@ public class ApplicationDbContext : DbContext
                 .HasDatabaseName("IX_Beneficiaries_Status");
         });
 
-        // ── Seed Demonstration Data (Reproducible EF Core HasData) ────
+        // ── 6. Seed Demonstration Data ────────────────────────────────────
         SeedDemonstrationData(modelBuilder);
     }
 
     /// <summary>
     /// Seeds safe, synthetic demonstration data for academic and evaluation purposes.
-    /// No actual patient or government information is stored.
     /// </summary>
     private static void SeedDemonstrationData(ModelBuilder modelBuilder)
     {
@@ -244,7 +271,7 @@ public class ApplicationDbContext : DbContext
             }
         );
 
-        // 3. Synthetic Beneficiaries (Demonstration records with unique identifiers)
+        // 3. Synthetic Beneficiaries
         modelBuilder.Entity<Beneficiary>().HasData(
             new Beneficiary
             {

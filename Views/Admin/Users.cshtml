@@ -1,16 +1,112 @@
+@model IEnumerable<NashaMuktiDB.ViewModels.UserListViewModel>
 @{
     ViewData["Title"] = "User Management";
 }
+
+<!-- Page Header -->
 <div class="page-header">
     <div>
-        <h1 class="page-title"><i class="bi bi-person-gear text-teal me-2"></i>User Management</h1>
-        <p class="page-subtitle">Manage system users and their roles</p>
+        <h1 class="page-title">
+            <i class="bi bi-person-gear text-teal me-2"></i>User Management
+        </h1>
+        <p class="page-subtitle">
+            Manage system administrators and authorized centre staff credentials
+        </p>
     </div>
-</div>
-<div class="panel panel-body">
-    <div class="empty-state">
-        <span class="empty-state-icon">👤</span>
-        <div class="empty-state-title">Admin user management coming in Phase 3</div>
+    <div class="d-flex gap-2">
+        <a asp-action="CreateUser" class="btn-primary-nm">
+            <i class="bi bi-person-plus-fill"></i> Add New User
+        </a>
     </div>
 </div>
 
+<div class="panel">
+    <div class="panel-header">
+        <h2 class="panel-title">
+            <i class="bi bi-people panel-icon"></i>
+            Registered System Accounts (@Model.Count())
+        </h2>
+    </div>
+
+    <div style="overflow-x:auto;">
+        <table class="data-table" aria-label="System user accounts">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Email / Username</th>
+                    <th>Role</th>
+                    <th>Assigned Centre</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted small-text">
+                            No user accounts found. Click "Add New User" to create one.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td class="fw-600 text-navy">
+                                <i class="bi bi-person-circle me-1 text-teal"></i>
+                                @user.FullName
+                            </td>
+                            <td>
+                                <code>@user.Email</code>
+                            </td>
+                            <td>
+                                @if (user.Role == "Admin")
+                                {
+                                    <span class="badge-status badge-role-admin">
+                                        <i class="bi bi-shield-check"></i> Admin
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-role-staff">
+                                        <i class="bi bi-building"></i> Centre Staff
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <span class="small-text">@user.CentreName</span>
+                            </td>
+                            <td>
+                                @if (user.IsActive)
+                                {
+                                    <span class="badge-status badge-active">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-inactive">Inactive</span>
+                                }
+                            </td>
+                            <td class="small-text text-muted">
+                                @user.CreatedAt.ToString("dd MMM yyyy")
+                            </td>
+                            <td class="text-end">
+                                <form asp-action="ToggleStatus" asp-route-id="@user.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" 
+                                            class="btn-outline-nm py-1 px-2 small-text @(user.IsActive ? "text-danger" : "text-success")"
+                                            data-confirm="Are you sure you want to @(user.IsActive ? "deactivate" : "activate") user '@user.FullName'?">
+                                        <i class="bi @(user.IsActive ? "bi-person-x" : "bi-person-check")"></i>
+                                        @(user.IsActive ? "Deactivate" : "Activate")
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

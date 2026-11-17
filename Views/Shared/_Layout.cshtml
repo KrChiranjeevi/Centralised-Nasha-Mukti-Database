@@ -1,3 +1,8 @@
+@using Microsoft.AspNetCore.Identity
+@using NashaMuktiDB.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -93,9 +98,9 @@
             </li>
         </ul>
 
-        @if (User.IsInRole("Admin"))
+        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
         {
-            <!-- ADMIN -->
+            <!-- ADMIN ONLY -->
             <div class="sidebar-section-label">Administration</div>
             <ul class="sidebar-nav">
                 <li>
@@ -113,24 +118,35 @@
             </ul>
         }
 
-        <!-- FOOTER: User Info -->
+        <!-- FOOTER: User Info / Sign In -->
         <div class="sidebar-footer">
-            @if (User.Identity?.IsAuthenticated == true)
+            @if (SignInManager.IsSignedIn(User))
             {
                 <div class="sidebar-user">
                     <div class="sidebar-user-avatar">
-                        @(User.Identity.Name?.Substring(0, 1).ToUpper() ?? "U")
+                        @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
                     </div>
                     <div class="sidebar-user-info">
-                        <div class="user-name">@User.Identity.Name</div>
+                        <div class="user-name text-truncate" title="@User.Identity?.Name">@User.Identity?.Name</div>
                         <div class="user-role">
-                            @(User.IsInRole("Admin") ? "System Admin" : "Centre Staff")
+                            @(User.IsInRole("Admin") ? "National Admin" : "Centre Staff")
                         </div>
                     </div>
-                    <a asp-controller="Account" asp-action="Logout"
-                       data-confirm="Are you sure you want to sign out?"
-                       title="Sign Out" aria-label="Sign Out">
-                        <i class="bi bi-box-arrow-right"></i>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline" id="sidebarLogoutForm">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="border-0 bg-transparent text-white-50 p-1" 
+                                style="cursor:pointer;" title="Sign Out" aria-label="Sign Out"
+                                data-confirm="Are you sure you want to sign out?">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="p-1">
+                    <a asp-controller="Account" asp-action="Login" class="btn-primary-nm w-100 justify-content-center py-2">
+                        <i class="bi bi-box-arrow-in-right"></i> Sign In
                     </a>
                 </div>
             }
@@ -188,12 +204,30 @@
                    data-bs-placement="bottom" aria-label="Reports">
                     <i class="bi bi-graph-up"></i>
                 </a>
-                @if (User.IsInRole("Admin"))
+
+                @if (SignInManager.IsSignedIn(User))
                 {
-                    <a asp-controller="Admin" asp-action="Users"
-                       class="topbar-btn" title="User Management" data-bs-toggle="tooltip"
-                       data-bs-placement="bottom" aria-label="User Management">
-                        <i class="bi bi-person-gear"></i>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="Admin" asp-action="Users"
+                           class="topbar-btn" title="User Management" data-bs-toggle="tooltip"
+                           data-bs-placement="bottom" aria-label="User Management">
+                            <i class="bi bi-person-gear"></i>
+                        </a>
+                    }
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="topbar-btn text-danger" title="Sign Out"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom"
+                                data-confirm="Are you sure you want to sign out?">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn-primary-nm py-1 px-3 small-text">
+                        <i class="bi bi-box-arrow-in-right"></i> Sign In
                     </a>
                 }
             </div>

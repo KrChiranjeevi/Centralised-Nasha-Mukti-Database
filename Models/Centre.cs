@@ -54,4 +54,7 @@ public class Centre
 
     // Navigation property: Centre has many Beneficiaries
     public virtual ICollection<Beneficiary> Beneficiaries { get; set; } = new List<Beneficiary>();
+
+    // Navigation property: Centre has assigned Staff members
+    public virtual ICollection<ApplicationUser> StaffMembers { get; set; } = new List<ApplicationUser>();
 }
