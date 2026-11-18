@@ -130,6 +130,7 @@ public class AccountController : Controller
     public IActionResult AccessDenied()
     {
         ViewData["Title"] = "Access Denied";
+        Response.StatusCode = StatusCodes.Status403Forbidden;
         return View("~/Views/Shared/AccessDenied.cshtml");
     }
 }

@@ -343,3 +343,53 @@ BEGIN
 END;
 ```
 
+---
+
+## 4. SQL Server Backup and Restoration Procedures
+
+The database backup strategy for `NashaMuktiDB` implements point-in-time recovery and testing on isolated staging databases without risking production data.
+
+### Safe Isolated Backup & Restore Script
+A complete T-SQL script is provided in [`Data/BackupAndRestore_Test.sql`](Data/BackupAndRestore_Test.sql).
+
+#### 1. Full Database Backup
+```sql
+BACKUP DATABASE [NashaMuktiDB]
+TO DISK = N'C:\INT402\Data\NashaMuktiDB_Backup.bak'
+WITH FORMAT,
+     INIT,
+     NAME = N'NashaMuktiDB-Full Backup',
+     COMPRESSION,
+     STATS = 10;
+```
+
+#### 2. Verify Backup File Integrity
+```sql
+RESTORE VERIFYONLY
+FROM DISK = N'C:\INT402\Data\NashaMuktiDB_Backup.bak';
+```
+
+#### 3. Restoration Onto Isolated Test Database (`NashaMuktiDB_TestCopy`)
+To ensure safety and prevent overwriting live data, the backup is restored into an isolated secondary database name using file relocation (`MOVE`):
+```sql
+RESTORE DATABASE [NashaMuktiDB_TestCopy]
+FROM DISK = N'C:\INT402\Data\NashaMuktiDB_Backup.bak'
+WITH FILE = 1,
+     MOVE N'NashaMuktiDB' TO N'C:\INT402\Data\NashaMuktiDB_TestCopy.mdf',
+     MOVE N'NashaMuktiDB_log' TO N'C:\INT402\Data\NashaMuktiDB_TestCopy_log.ldf',
+     REPLACE,
+     STATS = 10;
+```
+
+#### 4. Data Consistency Check
+```sql
+DBCC CHECKDB (N'NashaMuktiDB_TestCopy') WITH NO_INFOMSGS;
+```
+
+#### 5. Safe Cleanup
+```sql
+ALTER DATABASE [NashaMuktiDB_TestCopy] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+DROP DATABASE [NashaMuktiDB_TestCopy];
+```
+
+

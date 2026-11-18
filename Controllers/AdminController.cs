@@ -159,6 +159,9 @@ public class AdminController : Controller
         await _userManager.UpdateSecurityStampAsync(user);
         await _userManager.UpdateAsync(user);
 
+        _logger.LogInformation("Admin {AdminUser} toggled user {TargetUser} (ID: {UserId}) status to {Status}",
+            User.Identity?.Name, user.Email, user.Id, user.IsActive ? "Active" : "Inactive");
+
         TempData["Success"] = $"User '{user.FullName}' status changed to {(user.IsActive ? "Active" : "Inactive")}.";
         return RedirectToAction(nameof(Users));
     }

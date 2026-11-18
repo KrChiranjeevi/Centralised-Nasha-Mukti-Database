@@ -55,6 +55,7 @@ public class CentresController : Controller
         {
             _logger.LogWarning("Access denied: User {User} attempted to view Centre {CentreId}",
                 User.Identity?.Name, id);
+            Response.StatusCode = StatusCodes.Status403Forbidden;
             return View("~/Views/Shared/AccessDenied.cshtml");
         }
 

@@ -59,6 +59,7 @@ public class BeneficiariesController : Controller
         {
             _logger.LogWarning("Access Denied: User {User} attempted to view foreign Beneficiary {Id}",
                 User.Identity?.Name, id);
+            Response.StatusCode = StatusCodes.Status403Forbidden;
             return View("~/Views/Shared/AccessDenied.cshtml");
         }
 
@@ -155,6 +156,7 @@ public class BeneficiariesController : Controller
 
         if (!isAdmin && !await _authService.CanAccessBeneficiaryAsync(User, id))
         {
+            Response.StatusCode = StatusCodes.Status403Forbidden;
             return View("~/Views/Shared/AccessDenied.cshtml");
         }
 
@@ -201,6 +203,7 @@ public class BeneficiariesController : Controller
 
         if (!isAdmin && !await _authService.CanAccessBeneficiaryAsync(User, id))
         {
+            Response.StatusCode = StatusCodes.Status403Forbidden;
             return View("~/Views/Shared/AccessDenied.cshtml");
         }
 
