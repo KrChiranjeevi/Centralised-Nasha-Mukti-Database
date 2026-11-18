@@ -77,3 +77,4 @@ Verify the output:
 Passed! - Failed: 0, Passed: 25, Skipped: 0, Total: 25
 ```
 Take screenshot of the terminal displaying `25 passed` tests.
+

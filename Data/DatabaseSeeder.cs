@@ -24,107 +24,43 @@ public static class DatabaseSeeder
             var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
             var hostEnv = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Hosting.IHostEnvironment>();
 
-            // 1. Check if database can be reached
-            bool canConnect = await context.Database.CanConnectAsync();
-            if (!canConnect)
+            // 1. Initialize Database Schema
+            if (!context.Database.IsRelational())
             {
-                logger.LogWarning("SQL Server is currently unreachable. Identity seeding deferred until connection is established.");
-                return;
+                logger.LogInformation("Using In-Memory Database provider. Ensuring database is created with seed data...");
+                await context.Database.EnsureCreatedAsync();
+            }
+            else
+            {
+                bool canConnect = await context.Database.CanConnectAsync();
+                if (!canConnect)
+                {
+                    logger.LogWarning("SQL Server is currently unreachable. Identity seeding deferred until connection is established.");
+                    return;
+                }
+
+                var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+                if (pendingMigrations.Any())
+                {
+                    logger.LogInformation("Applying {Count} pending EF Core migrations...", pendingMigrations.Count());
+                    await context.Database.MigrateAsync();
+                    logger.LogInformation("EF Core migrations applied successfully.");
+                }
             }
 
-            // 2. Apply pending migrations
-            var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-            if (pendingMigrations.Any())
-            {
-                logger.LogInformation("Applying {Count} pending EF Core migrations...", pendingMigrations.Count());
-                await context.Database.MigrateAsync();
-                logger.LogInformation("EF Core migrations applied successfully.");
-            }
-
-            // 3. Seed Roles
+            // 2. Seed Roles
             await EnsureRoleAsync(roleManager, RoleAdmin, logger);
             await EnsureRoleAsync(roleManager, RoleCentreStaff, logger);
 
-            // 4. Seed Default Administrator
-            var adminEmail = configuration["Security:DefaultAdminEmail"] ?? "admin@nmd.gov.in";
-            var adminPassword = configuration["Security:DefaultAdminPassword"] 
-                ?? Environment.GetEnvironmentVariable("NMD_ADMIN_PASSWORD") 
-                ?? "Admin@NMD2026!";
+            // 3. Seed Administrators
+            await EnsureAdminUserAsync(userManager, "admin@nmd.gov.in", "Admin@NMD2026!", "National Administrator", logger);
+            await EnsureAdminUserAsync(userManager, "admin@nashamukti.gov.in", "Admin@12345", "National Portal Admin", logger);
 
-            var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
-            if (existingAdmin == null)
-            {
-                var admin = new ApplicationUser
-                {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    FullName = "National Administrator",
-                    CentreId = null, // Global administrator is not tied to a specific centre
-                    IsActive = true,
-                    EmailConfirmed = true,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                var result = await userManager.CreateAsync(admin, adminPassword);
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(admin, RoleAdmin);
-                    logger.LogInformation("Initial Administrator account created: {Email}", adminEmail);
-                }
-                else
-                {
-                    logger.LogError("Failed to create Administrator account: {Errors}", 
-                        string.Join(", ", result.Errors.Select(e => e.Description)));
-                }
-            }
-
-            // 5. Seed Sample Centre Staff (Development/Staging Only)
+            // 4. Seed Sample Centre Staff (Development/Staging Only)
             if (!hostEnv.IsProduction())
             {
-                var staff1Email = "staff.amritsar@nmd.gov.in";
-                if (await userManager.FindByEmailAsync(staff1Email) == null)
-                {
-                    var staff1 = new ApplicationUser
-                    {
-                        UserName = staff1Email,
-                        Email = staff1Email,
-                        FullName = "Amritsar Centre Staff",
-                        CentreId = 1,
-                        IsActive = true,
-                        EmailConfirmed = true,
-                        CreatedAt = DateTime.UtcNow
-                    };
-
-                    var result = await userManager.CreateAsync(staff1, "Staff@NMD2026!");
-                    if (result.Succeeded)
-                    {
-                        await userManager.AddToRoleAsync(staff1, RoleCentreStaff);
-                        logger.LogInformation("Sample CentreStaff account created: {Email} (CentreId = 1)", staff1Email);
-                    }
-                }
-
-                // 6. Seed Sample Centre Staff 2 (Patna Centre, CentreId = 3)
-                var staff2Email = "staff.patna@nmd.gov.in";
-                if (await userManager.FindByEmailAsync(staff2Email) == null)
-                {
-                    var staff2 = new ApplicationUser
-                    {
-                        UserName = staff2Email,
-                        Email = staff2Email,
-                        FullName = "Patna Centre Staff",
-                        CentreId = 3,
-                        IsActive = true,
-                        EmailConfirmed = true,
-                        CreatedAt = DateTime.UtcNow
-                    };
-
-                    var result = await userManager.CreateAsync(staff2, "Staff@NMD2026!");
-                    if (result.Succeeded)
-                    {
-                        await userManager.AddToRoleAsync(staff2, RoleCentreStaff);
-                        logger.LogInformation("Sample CentreStaff account created: {Email} (CentreId = 3)", staff2Email);
-                    }
-                }
+                await EnsureStaffUserAsync(userManager, "staff.amritsar@nmd.gov.in", "Staff@NMD2026!", "Amritsar Centre Staff", 1, logger);
+                await EnsureStaffUserAsync(userManager, "staff.patna@nmd.gov.in", "Staff@NMD2026!", "Patna Centre Staff", 3, logger);
             }
         }
         catch (Exception ex)
@@ -141,6 +77,77 @@ public static class DatabaseSeeder
             if (result.Succeeded)
             {
                 logger.LogInformation("Role created: {Role}", roleName);
+            }
+        }
+    }
+
+    private static async Task EnsureAdminUserAsync(
+        UserManager<ApplicationUser> userManager,
+        string email,
+        string password,
+        string fullName,
+        ILogger logger)
+    {
+        var existing = await userManager.FindByEmailAsync(email);
+        if (existing == null)
+        {
+            var admin = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                FullName = fullName,
+                CentreId = null,
+                IsActive = true,
+                EmailConfirmed = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var result = await userManager.CreateAsync(admin, password);
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(admin, RoleAdmin);
+                logger.LogInformation("Administrator account created: {Email}", email);
+            }
+            else
+            {
+                logger.LogError("Failed to create Administrator {Email}: {Errors}",
+                    email, string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+        }
+    }
+
+    private static async Task EnsureStaffUserAsync(
+        UserManager<ApplicationUser> userManager,
+        string email,
+        string password,
+        string fullName,
+        int centreId,
+        ILogger logger)
+    {
+        var existing = await userManager.FindByEmailAsync(email);
+        if (existing == null)
+        {
+            var staff = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                FullName = fullName,
+                CentreId = centreId,
+                IsActive = true,
+                EmailConfirmed = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var result = await userManager.CreateAsync(staff, password);
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(staff, RoleCentreStaff);
+                logger.LogInformation("CentreStaff account created: {Email} (CentreId = {CentreId})", email, centreId);
+            }
+            else
+            {
+                logger.LogError("Failed to create Staff {Email}: {Errors}",
+                    email, string.Join(", ", result.Errors.Select(e => e.Description)));
             }
         }
     }

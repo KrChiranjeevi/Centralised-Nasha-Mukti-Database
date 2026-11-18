@@ -76,3 +76,4 @@ public class CentreResponseDto
     public DateTime CreatedAt { get; set; }
     public int BeneficiariesCount { get; set; }
 }
+

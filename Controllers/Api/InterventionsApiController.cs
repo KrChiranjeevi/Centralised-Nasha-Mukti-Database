@@ -278,3 +278,4 @@ public class InterventionsApiController : ControllerBase
         return Ok(ApiResponse<InterventionResponseDto>.Ok(responseDto, "Intervention updated successfully"));
     }
 }
+

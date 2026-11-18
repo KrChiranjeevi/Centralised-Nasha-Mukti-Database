@@ -150,3 +150,4 @@ Our application uses Scoped injection for database context and domain services t
 ### Q14: How are Dashboard and Report counts calculated without Cartesian product errors?
 **Answer:** A common error in reporting queries with multiple 1-to-many relationships (e.g. Beneficiaries -> Counselling Sessions, Beneficiaries -> Interventions) is performing simultaneous `LEFT JOIN`s on detail tables, which multiplies rows (Cartesian product) and inflates totals.
 In our application, this is prevented in both SQL Views and C# services by **aggregating detail tables independently first** using Common Table Expressions (`WITH CounsellingAgg AS (...)`, `WITH InterventionAgg AS (...)`) or separate LINQ queries grouped by `CentreId`, and then joining the single-row aggregated metrics to the parent `Centres` table.
+

@@ -311,3 +311,4 @@ public class BeneficiariesApiController : ControllerBase
         return Ok(ApiResponse<string>.Ok($"Beneficiary '{b.BeneficiaryCode}' has been deactivated. All historical counselling, intervention, and follow-up records are preserved."));
     }
 }
+

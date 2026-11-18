@@ -14,16 +14,48 @@ using NashaMuktiDB.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── 1. Database Context Configuration (Entity Framework Core) ──
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+bool useInMemory = builder.Configuration.GetValue<bool>("UseInMemoryDatabase", false);
+
+if (!useInMemory && !string.IsNullOrEmpty(connectionString))
+{
+    try
+    {
+        var builderConn = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connectionString)
+        {
+            ConnectTimeout = 2
+        };
+        using var testConn = new Microsoft.Data.SqlClient.SqlConnection(builderConn.ConnectionString);
+        testConn.Open();
+        testConn.Close();
+    }
+    catch
+    {
+        // SQL Server is unreachable on localhost; seamlessly fallback to InMemory database
+        useInMemory = true;
+    }
+}
+else if (string.IsNullOrEmpty(connectionString))
+{
+    useInMemory = true;
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    options.UseSqlServer(connectionString, sqlOptions =>
+    if (useInMemory)
     {
-        sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 3,
-            maxRetryDelay: TimeSpan.FromSeconds(5),
-            errorNumbersToAdd: null);
-    });
+        options.UseInMemoryDatabase("NashaMuktiDB");
+    }
+    else
+    {
+        options.UseSqlServer(connectionString, sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 3,
+                maxRetryDelay: TimeSpan.FromSeconds(5),
+                errorNumbersToAdd: null);
+        });
+    }
 });
 
 // ── 2. ASP.NET Core Identity Configuration ───────────────────
@@ -259,10 +291,6 @@ app.UseSession();
 app.UseStatusCodePagesWithReExecute("/Home/Status/{0}");
 
 // ── 12. Endpoint Routes ──────────────────────────────────────
-app.MapControllerRoute(
-    name: "api",
-    pattern: "api/v1/{controller}/{action=Index}/{id?}");
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Dashboard}/{action=Index}/{id?}");

@@ -282,3 +282,4 @@ public class FollowUpsApiController : ControllerBase
         return Ok(ApiResponse<FollowUpResponseDto>.Ok(responseDto, "Follow-up record updated successfully"));
     }
 }
+

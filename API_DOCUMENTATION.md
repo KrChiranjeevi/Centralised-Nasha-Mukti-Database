@@ -243,3 +243,4 @@ The file `NashaMukti_API_Postman_Collection.json` includes pre-scripted authoriz
    ```
 2. **Inherited Bearer Authorization:** All other requests in the collection automatically pass `{{jwt_token}}` in their `Authorization` header.
 3. **Automated Status Code Assertions:** Requests include automated assertion checks (e.g. `pm.response.to.have.status(200)` and `pm.expect(jsonData.success).to.be.true`).
+

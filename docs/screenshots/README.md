@@ -23,3 +23,4 @@ This directory holds genuine screenshots captured from the live running applicat
 
 > [!NOTE]
 > Save captured `.png` images directly in this folder (`docs/screenshots/`). The root `README.md` references these relative paths.
+

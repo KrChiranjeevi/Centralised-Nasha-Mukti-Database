@@ -274,3 +274,4 @@ public class CounsellingApiController : ControllerBase
         return Ok(ApiResponse<CounsellingDetailDto>.Ok(responseDto, "Counselling session updated successfully"));
     }
 }
+

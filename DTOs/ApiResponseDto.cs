@@ -27,3 +27,4 @@ public class PaginatedApiResponse<T>
     public bool HasNextPage => PageIndex < TotalPages;
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 }
+

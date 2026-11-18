@@ -43,3 +43,4 @@ public class CentreWiseReportDto
     public int PendingFollowUps { get; set; }
     public int OverdueFollowUps { get; set; }
 }
+

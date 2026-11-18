@@ -277,3 +277,4 @@ public class CentresApiController : ControllerBase
         return Ok(ApiResponse<string>.Ok($"Centre '{centre.CentreName}' has been safely deactivated. All historical beneficiary records are preserved."));
     }
 }
+

@@ -276,3 +276,4 @@ public interface ICentreAuthorizationService
    - In intake forms (`Create`), the `model.CentreId` submitted from the browser is unconditionally overwritten on the server with `user.CentreId`.
    - In detail, edit, and API actions, `CanAccessBeneficiaryAsync` verifies that `beneficiary.CentreId == user.CentreId`.
    - If unauthorized, the request immediately terminates with HTTP `403 Forbidden` or redirects to `AccessDenied`.
+
