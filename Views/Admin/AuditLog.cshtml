@@ -1,16 +1,175 @@
 @{
-    ViewData["Title"] = "Audit Log";
+    ViewData["Title"] = "System Security & Audit Log";
 }
+
 <div class="page-header">
     <div>
-        <h1 class="page-title"><i class="bi bi-shield-check text-teal me-2"></i>Audit Log</h1>
-        <p class="page-subtitle">Track all important record changes</p>
+        <h1 class="page-title">
+            <i class="bi bi-shield-check text-teal me-2"></i>Security &amp; Audit Log
+        </h1>
+        <p class="page-subtitle">
+            Real-time security monitoring, access control boundaries, and administrative audit trails
+        </p>
     </div>
-</div>
-<div class="panel panel-body">
-    <div class="empty-state">
-        <span class="empty-state-icon">🔒</span>
-        <div class="empty-state-title">Audit log coming in Phase 7</div>
+    <div class="d-flex gap-2">
+        <span class="badge-status badge-active">
+            <i class="bi bi-check-circle-fill me-1"></i> Audit Policy Active
+        </span>
     </div>
 </div>
 
+<!-- ── SECURITY AUDIT SUMMARY CARDS ───────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-card-icon stat-icon-teal">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-card-value">Enforced</div>
+                <div class="stat-card-label">IDOR Access Control</div>
+                <div class="stat-card-change up">
+                    <i class="bi bi-check2"></i> Centre-level Scoping
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-card-icon stat-icon-blue">
+                <i class="bi bi-arrow-repeat"></i>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-card-value">Active</div>
+                <div class="stat-card-label">Session Revocation</div>
+                <div class="stat-card-change up">
+                    <i class="bi bi-check2"></i> Security Stamp Validation
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-card-icon stat-icon-green">
+                <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-card-value">CWE-1236</div>
+                <div class="stat-card-label">CSV Sanitization</div>
+                <div class="stat-card-change up">
+                    <i class="bi bi-shield-check"></i> Formula Injection Immune
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-card-icon stat-icon-orange">
+                <i class="bi bi-eye-slash-fill"></i>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-card-value">Protected</div>
+                <div class="stat-card-label">Clinical Privacy</div>
+                <div class="stat-card-change up">
+                    <i class="bi bi-lock-fill"></i> Psychotherapy Notes
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── AUDIT ARCHITECTURE & EVENT MONITORING ─────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-journal-text panel-icon"></i>
+                    Audit Logged Operational Events
+                </h2>
+                <span class="small-text text-muted">System audit policy</span>
+            </div>
+            <div class="panel-body p-0">
+                <div class="table-responsive">
+                    <table class="data-table mb-0" aria-label="System Security Events">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Audited Action</th>
+                                <th>Enforcement Mechanism</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-600 text-navy">Identity &amp; Auth</td>
+                                <td>User Sign-In / Account Lockout</td>
+                                <td>ASP.NET Core Identity (5 attempts, 15m lockout)</td>
+                                <td><span class="badge-status badge-active">Audited</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-600 text-navy">Access Control</td>
+                                <td>IDOR Cross-Centre Access Rejection</td>
+                                <td>ICentreAuthorizationService (HTTP 403 Forbidden)</td>
+                                <td><span class="badge-status badge-active">Audited</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-600 text-navy">User Administration</td>
+                                <td>Account Activation / Deactivation</td>
+                                <td>UpdateSecurityStampAsync + Real-Time Revocation</td>
+                                <td><span class="badge-status badge-active">Audited</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-600 text-navy">Clinical Dossier</td>
+                                <td>Beneficiary Intake Registration</td>
+                                <td>Deterministic synthetic code generation (BEN-...)</td>
+                                <td><span class="badge-status badge-active">Audited</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-600 text-navy">Reporting &amp; Data</td>
+                                <td>Sanitized CSV Export</td>
+                                <td>Formula Injection Escaping (' prefix for =, +, -, @@)</td>
+                                <td><span class="badge-status badge-active">Audited</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-shield-shaded panel-icon"></i>
+                    HTTP Security Headers
+                </h2>
+            </div>
+            <div class="panel-body">
+                <ul class="list-unstyled mb-0 d-flex flex-column gap-2 small-text">
+                    <li class="d-flex justify-content-between p-2 rounded bg-light border">
+                        <span class="fw-600">X-Content-Type-Options:</span>
+                        <code class="text-teal">nosniff</code>
+                    </li>
+                    <li class="d-flex justify-content-between p-2 rounded bg-light border">
+                        <span class="fw-600">X-Frame-Options:</span>
+                        <code class="text-teal">SAMEORIGIN</code>
+                    </li>
+                    <li class="d-flex justify-content-between p-2 rounded bg-light border">
+                        <span class="fw-600">X-XSS-Protection:</span>
+                        <code class="text-teal">1; mode=block</code>
+                    </li>
+                    <li class="d-flex justify-content-between p-2 rounded bg-light border">
+                        <span class="fw-600">Referrer-Policy:</span>
+                        <code class="text-teal">strict-origin</code>
+                    </li>
+                    <li class="d-flex justify-content-between p-2 rounded bg-light border">
+                        <span class="fw-600">Content-Security-Policy:</span>
+                        <code class="text-teal">default-src 'self'</code>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

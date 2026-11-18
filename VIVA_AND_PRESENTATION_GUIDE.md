@@ -76,7 +76,7 @@
 ### Slide 12: Limitations, Future Scope & Conclusion
 - **Current Limitations:** In-memory session store suitable for single-node hosting; SMS/WhatsApp reminder integrations require external gateways.
 - **Future Enhancements:** Biometric de-duplication, Redis distributed cache for multi-region clustering, AI relapse risk prediction models.
-- **Conclusion:** A robust, secure, and production-ready solution satisfying all syllabus criteria of INT402.
+- **Conclusion:** A robust, secure, and academically verified demonstration platform satisfying all syllabus criteria of INT402.
 
 ---
 
