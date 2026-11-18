@@ -49,7 +49,25 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 // ── 3. Dual Authentication (Cookie for MVC + JWT Bearer for Web API) ───
-builder.Services.AddAuthentication()
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = "SmartScheme";
+    options.DefaultChallengeScheme = "SmartScheme";
+})
+.AddPolicyScheme("SmartScheme", "Cookie or JWT", options =>
+{
+    options.ForwardDefaultSelector = context =>
+    {
+        var authHeader = context.Request.Headers.Authorization.ToString();
+        if (context.Request.Path.StartsWithSegments("/api") || 
+            (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)))
+        {
+            return JwtBearerDefaults.AuthenticationScheme;
+        }
+
+        return IdentityConstants.ApplicationScheme;
+    };
+})
 .AddJwtBearer(options =>
 {
     var jwtKey = builder.Configuration["Jwt:Key"] ?? "NashaMuktiPlatform_SecureJwtSecretKey_2026_AcademicDemoKey99!";
@@ -112,9 +130,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 // Dual Authorization: Authenticate transparently via Cookie OR JWT Bearer
 builder.Services.AddAuthorization(options =>
 {
-    var defaultPolicy = new AuthorizationPolicyBuilder(
-        IdentityConstants.ApplicationScheme,
-        JwtBearerDefaults.AuthenticationScheme)
+    var defaultPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
 
