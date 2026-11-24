@@ -17,27 +17,30 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 bool useInMemory = builder.Configuration.GetValue<bool>("UseInMemoryDatabase", false);
 
-if (!useInMemory && !string.IsNullOrEmpty(connectionString))
+if (!EF.IsDesignTime)
 {
-    try
+    if (!useInMemory && !string.IsNullOrEmpty(connectionString))
     {
-        var builderConn = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connectionString)
+        try
         {
-            ConnectTimeout = 2
-        };
-        using var testConn = new Microsoft.Data.SqlClient.SqlConnection(builderConn.ConnectionString);
-        testConn.Open();
-        testConn.Close();
+            var builderConn = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connectionString)
+            {
+                ConnectTimeout = 2
+            };
+            using var testConn = new Microsoft.Data.SqlClient.SqlConnection(builderConn.ConnectionString);
+            testConn.Open();
+            testConn.Close();
+        }
+        catch
+        {
+            // SQL Server is unreachable on localhost; seamlessly fallback to InMemory database
+            useInMemory = true;
+        }
     }
-    catch
+    else if (string.IsNullOrEmpty(connectionString))
     {
-        // SQL Server is unreachable on localhost; seamlessly fallback to InMemory database
         useInMemory = true;
     }
-}
-else if (string.IsNullOrEmpty(connectionString))
-{
-    useInMemory = true;
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

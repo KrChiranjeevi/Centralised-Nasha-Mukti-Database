@@ -155,6 +155,81 @@ namespace NashaMuktiDB.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("NashaMuktiDB.Models.AccountRequest", b =>
+                {
+                    b.Property<int>("AccountRequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AccountRequestId"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ApprovedUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ContactNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("ReasonForAccess")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("RequestedCentreId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReviewedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("Pending");
+
+                    b.HasKey("AccountRequestId");
+
+                    b.HasIndex("ApprovedUserId");
+
+                    b.HasIndex("Email")
+                        .HasDatabaseName("IX_AccountRequests_Email");
+
+                    b.HasIndex("RequestedCentreId")
+                        .HasDatabaseName("IX_AccountRequests_RequestedCentreId");
+
+                    b.HasIndex("ReviewedByUserId");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_AccountRequests_Status");
+
+                    b.ToTable("AccountRequests", (string)null);
+                });
+
             modelBuilder.Entity("NashaMuktiDB.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -197,6 +272,11 @@ namespace NashaMuktiDB.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("MustChangePassword")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -1008,6 +1088,34 @@ namespace NashaMuktiDB.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("NashaMuktiDB.Models.AccountRequest", b =>
+                {
+                    b.HasOne("NashaMuktiDB.Models.ApplicationUser", "ApprovedUser")
+                        .WithMany()
+                        .HasForeignKey("ApprovedUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_AccountRequests_ApprovedUser");
+
+                    b.HasOne("NashaMuktiDB.Models.Centre", "RequestedCentre")
+                        .WithMany()
+                        .HasForeignKey("RequestedCentreId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_AccountRequests_Centres");
+
+                    b.HasOne("NashaMuktiDB.Models.ApplicationUser", "ReviewedByUser")
+                        .WithMany()
+                        .HasForeignKey("ReviewedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_AccountRequests_ReviewedBy");
+
+                    b.Navigation("ApprovedUser");
+
+                    b.Navigation("RequestedCentre");
+
+                    b.Navigation("ReviewedByUser");
                 });
 
             modelBuilder.Entity("NashaMuktiDB.Models.ApplicationUser", b =>

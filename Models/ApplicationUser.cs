@@ -25,6 +25,9 @@ public class ApplicationUser : IdentityUser
     [Display(Name = "Account Active")]
     public bool IsActive { get; set; } = true;
 
+    [Display(Name = "Must Change Password")]
+    public bool MustChangePassword { get; set; } = false;
+
     [Display(Name = "Account Created")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

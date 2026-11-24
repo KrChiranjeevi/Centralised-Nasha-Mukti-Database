@@ -22,6 +22,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<CounsellingSession> CounsellingSessions => Set<CounsellingSession>();
     public DbSet<Intervention> Interventions => Set<Intervention>();
     public DbSet<FollowUp> FollowUps => Set<FollowUp>();
+    public DbSet<AccountRequest> AccountRequests => Set<AccountRequest>();
     public DbSet<CentreServiceSummaryView> CentreServiceSummaries => Set<CentreServiceSummaryView>();
     public DbSet<StateBeneficiarySummaryView> StateBeneficiarySummaries => Set<StateBeneficiarySummaryView>();
 
@@ -34,6 +35,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.Property(u => u.FullName).IsRequired().HasMaxLength(150);
             entity.Property(u => u.IsActive).HasDefaultValue(true);
+            entity.Property(u => u.MustChangePassword).HasDefaultValue(false);
             entity.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
 
             entity.HasOne(u => u.Centre)
@@ -43,6 +45,42 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .HasConstraintName("FK_AspNetUsers_Centres");
 
             entity.HasIndex(u => u.CentreId).HasDatabaseName("IX_AspNetUsers_CentreId");
+        });
+
+        // ── 1B. AccountRequest Configuration ──────────────────────────────
+        modelBuilder.Entity<AccountRequest>(entity =>
+        {
+            entity.ToTable("AccountRequests");
+            entity.HasKey(r => r.AccountRequestId);
+            entity.Property(r => r.FullName).IsRequired().HasMaxLength(150);
+            entity.Property(r => r.Email).IsRequired().HasMaxLength(150);
+            entity.Property(r => r.ContactNumber).HasMaxLength(20);
+            entity.Property(r => r.ReasonForAccess).IsRequired().HasMaxLength(500);
+            entity.Property(r => r.Status).IsRequired().HasMaxLength(30).HasDefaultValue("Pending");
+            entity.Property(r => r.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(r => r.AdminNotes).HasMaxLength(500);
+
+            entity.HasOne(r => r.RequestedCentre)
+                .WithMany()
+                .HasForeignKey(r => r.RequestedCentreId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_AccountRequests_Centres");
+
+            entity.HasOne(r => r.ReviewedByUser)
+                .WithMany()
+                .HasForeignKey(r => r.ReviewedByUserId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_AccountRequests_ReviewedBy");
+
+            entity.HasOne(r => r.ApprovedUser)
+                .WithMany()
+                .HasForeignKey(r => r.ApprovedUserId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_AccountRequests_ApprovedUser");
+
+            entity.HasIndex(r => r.Email).HasDatabaseName("IX_AccountRequests_Email");
+            entity.HasIndex(r => r.Status).HasDatabaseName("IX_AccountRequests_Status");
+            entity.HasIndex(r => r.RequestedCentreId).HasDatabaseName("IX_AccountRequests_RequestedCentreId");
         });
 
         // ── 2. State Entity Configuration ─────────────────────────────────

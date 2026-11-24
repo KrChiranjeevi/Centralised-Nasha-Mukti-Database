@@ -73,7 +73,15 @@
             </button>
         </form>
 
-        <div class="login-footer mt-4">
+        <div class="text-center mt-3 pt-3" style="border-top: 1px solid var(--gray-200);">
+            <span class="small-text text-muted">Need access to the national database?</span><br />
+            <a asp-action="RequestAccount" asp-controller="Account"
+               class="text-teal fw-600 small-text text-decoration-none d-inline-flex align-items-center gap-1 mt-1">
+                <i class="bi bi-person-plus-fill"></i> Request a New Account
+            </a>
+        </div>
+
+        <div class="login-footer mt-3">
             <i class="bi bi-shield-lock text-teal me-1"></i>
             Secure access — Authorized personnel only<br />
             <small class="mt-1 d-block" style="color:var(--gray-400);">

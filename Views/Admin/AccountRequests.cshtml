@@ -1,0 +1,246 @@
+@model IEnumerable<NashaMuktiDB.ViewModels.AccountRequestItemViewModel>
+@{
+    ViewData["Title"] = "Registration Access Requests";
+    var currentFilter = ViewBag.CurrentStatusFilter as string ?? "Pending";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-inbox-fill text-teal me-2"></i>Registration Access Requests
+        </h1>
+        <p class="page-subtitle">
+            Review and authorize access requests submitted by prospective centre staff and administrators
+        </p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-action="Users" class="btn-outline-nm">
+            <i class="bi bi-people me-1"></i> Registered Accounts
+        </a>
+        <a asp-action="CreateUser" class="btn-primary-nm">
+            <i class="bi bi-person-plus-fill"></i> Add User Directly
+        </a>
+    </div>
+</div>
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-tabs mb-4 border-bottom" style="border-color:var(--gray-300);">
+    <li class="nav-item">
+        <a class="nav-link text-muted" asp-action="Users">
+            <i class="bi bi-people me-1"></i> Registered Accounts
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link active fw-600 text-teal" asp-action="AccountRequests">
+            <i class="bi bi-inbox-fill me-1"></i> Access Requests
+            @if (ViewBag.PendingCount != null && ViewBag.PendingCount > 0)
+            {
+                <span class="badge bg-danger rounded-pill ms-1">@ViewBag.PendingCount</span>
+            }
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-muted" asp-action="AuditLog">
+            <i class="bi bi-journal-text me-1"></i> Security Audit Log
+        </a>
+    </li>
+</ul>
+
+<!-- Status Filter Pills -->
+<div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
+    <span class="small-text fw-600 text-muted me-1">Filter by Status:</span>
+    <a asp-action="AccountRequests" asp-route-status="Pending"
+       class="btn btn-sm @(currentFilter == "Pending" ? "btn-warning text-dark fw-600" : "btn-outline-secondary")">
+        <i class="bi bi-clock-history me-1"></i> Pending (@(ViewBag.PendingCount ?? 0))
+    </a>
+    <a asp-action="AccountRequests" asp-route-status="Approved"
+       class="btn btn-sm @(currentFilter == "Approved" ? "btn-success fw-600 text-white" : "btn-outline-secondary")">
+        <i class="bi bi-check-circle me-1"></i> Approved (@(ViewBag.ApprovedCount ?? 0))
+    </a>
+    <a asp-action="AccountRequests" asp-route-status="Rejected"
+       class="btn btn-sm @(currentFilter == "Rejected" ? "btn-danger fw-600 text-white" : "btn-outline-secondary")">
+        <i class="bi bi-x-circle me-1"></i> Declined (@(ViewBag.RejectedCount ?? 0))
+    </a>
+    <a asp-action="AccountRequests" asp-route-status="All"
+       class="btn btn-sm @(currentFilter == "All" ? "btn-dark fw-600" : "btn-outline-secondary")">
+        <i class="bi bi-list-ul me-1"></i> All Requests (@(ViewBag.TotalCount ?? 0))
+    </a>
+</div>
+
+<div class="panel">
+    <div class="panel-header d-flex justify-content-between align-items-center">
+        <h2 class="panel-title">
+            <i class="bi bi-card-checklist panel-icon"></i>
+            Access Submissions (@Model.Count())
+        </h2>
+    </div>
+
+    <div style="overflow-x:auto;">
+        <table class="data-table" aria-label="Access request records">
+            <thead>
+                <tr>
+                    <th>Tracking ID</th>
+                    <th>Applicant Details</th>
+                    <th>Official Email</th>
+                    <th>Requested Centre</th>
+                    <th>Reason / Justification</th>
+                    <th>Status</th>
+                    <th>Requested On</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted small-text">
+                            <i class="bi bi-inbox fs-2 d-block mb-2 text-gray-400"></i>
+                            No access requests found matching the "<strong>@currentFilter</strong>" status filter.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="badge bg-light text-navy border font-monospace">
+                                    #REQ-@item.AccountRequestId.ToString("D5")
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-600 text-navy">@item.FullName</div>
+                                @if (!string.IsNullOrEmpty(item.ContactNumber))
+                                {
+                                    <div class="small-text text-muted">
+                                        <i class="bi bi-telephone me-1"></i>@item.ContactNumber
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <code>@item.Email</code>
+                            </td>
+                            <td>
+                                <span class="small-text fw-500">
+                                    <i class="bi bi-building me-1 text-teal"></i>@item.RequestedCentreName
+                                </span>
+                            </td>
+                            <td>
+                                <span class="small-text text-muted" title="@item.ReasonForAccess" style="max-width:240px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                    @item.ReasonForAccess
+                                </span>
+                            </td>
+                            <td>
+                                @if (item.Status == "Pending")
+                                {
+                                    <span class="badge-status badge-warning" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;">
+                                        <i class="bi bi-clock-history"></i> Pending
+                                    </span>
+                                }
+                                else if (item.Status == "Approved")
+                                {
+                                    <span class="badge-status badge-active" title="Approved by @item.ReviewedByName on @item.ReviewedAt?.ToString("dd MMM yyyy")">
+                                        <i class="bi bi-check-circle-fill"></i> Approved
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-inactive" title="Declined: @item.AdminNotes">
+                                        <i class="bi bi-x-circle-fill"></i> Declined
+                                    </span>
+                                }
+                            </td>
+                            <td class="small-text text-muted">
+                                @item.CreatedAt.ToString("dd MMM yyyy")<br />
+                                <span class="small-text">@item.CreatedAt.ToString("HH:mm") UTC</span>
+                            </td>
+                            <td class="text-end">
+                                @if (item.Status == "Pending")
+                                {
+                                    <div class="d-inline-flex gap-1">
+                                        <a asp-action="ReviewRequest" asp-route-id="@item.AccountRequestId"
+                                           class="btn-primary-nm py-1 px-2 small-text text-decoration-none" title="Review and configure authorization">
+                                            <i class="bi bi-person-check-fill"></i> Review
+                                        </a>
+                                        <button type="button" class="btn-outline-nm py-1 px-2 small-text text-danger"
+                                                data-bs-toggle="modal" data-bs-target="#rejectModal"
+                                                data-id="@item.AccountRequestId" data-name="@item.FullName"
+                                                title="Decline access request">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                }
+                                else if (item.Status == "Approved")
+                                {
+                                    <span class="small-text text-success d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-check2-all"></i> Account Created
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="small-text text-muted" title="@item.AdminNotes">
+                                        <i class="bi bi-slash-circle"></i> Rejected
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal for Rejection Confirmation -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="RejectRequest" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="modalRequestId" name="id" value="" />
+
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="rejectModalLabel">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Decline Access Request
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">
+                        Are you sure you want to decline the system access request for <strong id="modalApplicantName"></strong>?
+                    </p>
+                    <div class="mb-3">
+                        <label for="rejectionReason" class="form-label small-text fw-600">
+                            Reason for Declining (Recorded in audit trail):
+                        </label>
+                        <textarea class="form-control" id="rejectionReason" name="rejectionReason" rows="3"
+                                  placeholder="e.g. Unverified centre staff credential / duplicate application..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="bi bi-x-circle me-1"></i> Confirm Decline
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var rejectModal = document.getElementById('rejectModal');
+        if (rejectModal) {
+            rejectModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var id = button.getAttribute('data-id');
+                var name = button.getAttribute('data-name');
+                document.getElementById('modalRequestId').value = id;
+                document.getElementById('modalApplicantName').textContent = name;
+            });
+        }
+    </script>
+}

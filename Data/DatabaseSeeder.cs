@@ -61,6 +61,9 @@ public static class DatabaseSeeder
             {
                 await EnsureStaffUserAsync(userManager, "staff.amritsar@nmd.gov.in", "Staff@NMD2026!", "Amritsar Centre Staff", 1, logger);
                 await EnsureStaffUserAsync(userManager, "staff.patna@nmd.gov.in", "Staff@NMD2026!", "Patna Centre Staff", 3, logger);
+
+                // 5. Seed Sample Pending Account Requests (Development/Staging Only)
+                await EnsureSampleAccountRequestsAsync(context, logger);
             }
         }
         catch (Exception ex)
@@ -149,6 +152,40 @@ public static class DatabaseSeeder
                 logger.LogError("Failed to create Staff {Email}: {Errors}",
                     email, string.Join(", ", result.Errors.Select(e => e.Description)));
             }
+        }
+    }
+
+    private static async Task EnsureSampleAccountRequestsAsync(ApplicationDbContext context, ILogger logger)
+    {
+        if (!await context.AccountRequests.AnyAsync())
+        {
+            var requests = new List<AccountRequest>
+            {
+                new AccountRequest
+                {
+                    FullName = "Dr. Vikram Sethi",
+                    Email = "vikram.sethi@nmd.gov.in",
+                    ContactNumber = "+91 98111 22334",
+                    RequestedCentreId = 1,
+                    ReasonForAccess = "Newly appointed Medical Officer for outpatient clinical detoxification and intake assessments.",
+                    Status = nameof(AccountRequestStatus.Pending),
+                    CreatedAt = DateTime.UtcNow.AddHours(-14)
+                },
+                new AccountRequest
+                {
+                    FullName = "Sunita Kumari",
+                    Email = "sunita.kumari@nmd.gov.in",
+                    ContactNumber = "+91 94301 55667",
+                    RequestedCentreId = 3,
+                    ReasonForAccess = "Senior Rehabilitation Counsellor coordinating relapse prevention and family therapy modules.",
+                    Status = nameof(AccountRequestStatus.Pending),
+                    CreatedAt = DateTime.UtcNow.AddHours(-6)
+                }
+            };
+
+            await context.AccountRequests.AddRangeAsync(requests);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Seeded {Count} sample pending access requests for demonstration.", requests.Count);
         }
     }
 }

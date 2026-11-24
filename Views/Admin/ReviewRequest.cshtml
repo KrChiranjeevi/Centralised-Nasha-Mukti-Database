@@ -1,0 +1,201 @@
+@model NashaMuktiDB.ViewModels.ApproveAccountRequestViewModel
+@{
+    ViewData["Title"] = "Review Access Request";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-person-check-fill text-teal me-2"></i>Review Access Request
+        </h1>
+        <p class="page-subtitle">
+            Verify applicant credentials and assign authorized role and centre permissions
+        </p>
+    </div>
+    <div>
+        <a asp-action="AccountRequests" class="btn-outline-nm">
+            <i class="bi bi-arrow-left"></i> Back to Requests
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Applicant Submission Details -->
+    <div class="col-lg-5">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-person-lines-fill panel-icon"></i>
+                    Applicant Information
+                </h2>
+            </div>
+            <div class="p-3">
+                <div class="mb-3">
+                    <label class="small-text text-muted d-block">Full Name</label>
+                    <span class="fs-6 fw-600 text-navy">@Model.FullName</span>
+                </div>
+                <div class="mb-3">
+                    <label class="small-text text-muted d-block">Official Email</label>
+                    <code>@Model.Email</code>
+                </div>
+                <div class="mb-3">
+                    <label class="small-text text-muted d-block">Contact Number</label>
+                    <span>@(string.IsNullOrEmpty(Model.ContactNumber) ? "Not Provided" : Model.ContactNumber)</span>
+                </div>
+                <div class="mb-3">
+                    <label class="small-text text-muted d-block">Requested De-Addiction Centre</label>
+                    <span class="badge bg-light text-navy border p-2 d-inline-block">
+                        <i class="bi bi-building text-teal me-1"></i>@Model.RequestedCentreName
+                    </span>
+                </div>
+                <div class="mb-3">
+                    <label class="small-text text-muted d-block">Reason for System Access</label>
+                    <div class="p-3 rounded bg-light border small-text text-dark" style="white-space:pre-wrap;">@Model.ReasonForAccess</div>
+                </div>
+                <div>
+                    <label class="small-text text-muted d-block">Date Submitted</label>
+                    <span class="small-text">@Model.CreatedAt.ToString("dd MMMM yyyy, HH:mm") UTC</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Administrative Approval Form -->
+    <div class="col-lg-7">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="bi bi-shield-check panel-icon"></i>
+                    Authorization &amp; Role Assignment
+                </h2>
+            </div>
+            <div class="p-4">
+                <!-- Validation Summary -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert-nm alert-danger-nm mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+                        <div>
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <div>@error.ErrorMessage</div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <form asp-action="ApproveRequest" method="post" data-loading="true" novalidate>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="AccountRequestId" />
+
+                    <!-- Role Assignment -->
+                    <div class="mb-3">
+                        <label asp-for="AssignedRole" class="form-label-nm">
+                            Assign System Role <span class="required">*</span>
+                        </label>
+                        <select asp-for="AssignedRole" id="roleSelector" class="form-select-nm" required>
+                            <option value="CentreStaff">Centre Staff (Restricted to assigned facility)</option>
+                            <option value="Admin">National Administrator (Nationwide scope)</option>
+                        </select>
+                        <span class="small-text text-muted mt-1 d-block">
+                            Applicants never assign their own role. Administrative privileges must be granted strictly by a verified National Admin.
+                        </span>
+                        <span asp-validation-for="AssignedRole" class="field-validation-error"></span>
+                    </div>
+
+                    <!-- Centre Assignment -->
+                    <div class="mb-3" id="centreContainer">
+                        <label asp-for="AssignedCentreId" class="form-label-nm">
+                            Assigned Nasha Mukti Kendra <span class="required">*</span>
+                        </label>
+                        <select asp-for="AssignedCentreId" asp-items="ViewBag.CentresList" id="centreSelector" class="form-select-nm">
+                            <option value="">-- Select Active Centre --</option>
+                        </select>
+                        <span class="small-text text-muted mt-1 d-block">
+                            Governs centre-level clinical data isolation. Staff members can only view records from their designated Kendra.
+                        </span>
+                        <span asp-validation-for="AssignedCentreId" class="field-validation-error"></span>
+                    </div>
+
+                    <hr class="my-4" style="border-color:var(--gray-200);" />
+
+                    <!-- Password Configuration -->
+                    <h5 class="fs-6 fw-600 text-navy mb-3">
+                        <i class="bi bi-key-fill text-teal me-1"></i>Initial Authentication Credentials
+                    </h5>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="TemporaryPassword" class="form-label-nm">
+                                Temporary Password <span class="required">*</span>
+                            </label>
+                            <input asp-for="TemporaryPassword" class="form-control-nm" type="password" required />
+                            <span asp-validation-for="TemporaryPassword" class="field-validation-error"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ConfirmPassword" class="form-label-nm">
+                                Confirm Password <span class="required">*</span>
+                            </label>
+                            <input asp-for="ConfirmPassword" class="form-control-nm" type="password" required />
+                            <span asp-validation-for="ConfirmPassword" class="field-validation-error"></span>
+                        </div>
+                    </div>
+
+                    <!-- Require password change on first login -->
+                    <div class="mb-4">
+                        <label class="d-flex align-items-center gap-2 small-text fw-600 text-navy" style="cursor:pointer;">
+                            <input asp-for="RequirePasswordChange" style="accent-color:var(--teal-600);" />
+                            Require user to establish permanent personal password on first login
+                        </label>
+                        <span class="small-text text-muted ps-4 d-block">
+                            Recommended. The approved user will be immediately redirected to create their own confidential password upon initial sign-in.
+                        </span>
+                    </div>
+
+                    <!-- Administrator Remarks -->
+                    <div class="mb-4">
+                        <label asp-for="AdminNotes" class="form-label-nm">
+                            Administrator Verification Remarks <span class="text-muted small-text fw-normal">(Optional audit notes)</span>
+                        </label>
+                        <textarea asp-for="AdminNotes" class="form-control-nm" rows="2"
+                                  placeholder="e.g. Identity verified via State Nodal Agency / Official posting order #402/2026"></textarea>
+                        <span asp-validation-for="AdminNotes" class="field-validation-error"></span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a asp-action="AccountRequests" class="btn-outline-nm">Cancel</a>
+                        <button type="submit" class="btn-primary-nm py-2 px-4">
+                            <i class="bi bi-check-circle-fill"></i> Approve &amp; Activate Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var roleSelect = document.getElementById('roleSelector');
+            var centreContainer = document.getElementById('centreContainer');
+            var centreSelect = document.getElementById('centreSelector');
+
+            function toggleCentreVisibility() {
+                if (roleSelect.value === 'Admin') {
+                    centreContainer.style.display = 'none';
+                    centreSelect.removeAttribute('required');
+                } else {
+                    centreContainer.style.display = 'block';
+                    centreSelect.setAttribute('required', 'required');
+                }
+            }
+
+            roleSelect.addEventListener('change', toggleCentreVisibility);
+            toggleCentreVisibility();
+        });
+    </script>
+}

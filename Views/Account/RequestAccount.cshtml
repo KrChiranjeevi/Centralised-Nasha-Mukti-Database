@@ -1,0 +1,141 @@
+@model NashaMuktiDB.ViewModels.RequestAccountViewModel
+@{
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
+    ViewData["Title"] = "Request a New Account";
+}
+
+<div class="login-page">
+    <div class="login-card" style="max-width: 520px;">
+
+        <!-- Logo -->
+        <div class="login-logo">
+            <div class="login-logo-icon" aria-hidden="true">🏥</div>
+            <div>
+                <p class="login-title">Nasha Mukti DB</p>
+                <p class="login-subtitle">Ministry of Social Justice &amp; Empowerment (Academic Demo)</p>
+            </div>
+        </div>
+
+        <h1 class="login-heading">Request System Access</h1>
+        <p class="small-text text-muted mb-4 text-center">
+            Submit your official credentials for administrative review. Once verified by a National Administrator, your role and centre authorization will be granted.
+        </p>
+
+        <!-- Validation Summary -->
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert-nm alert-danger-nm mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+                <div>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            </div>
+        }
+
+        <form method="post" asp-controller="Account" asp-action="RequestAccount" data-loading="true" novalidate>
+            @Html.AntiForgeryToken()
+
+            <!-- Full Name -->
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label-nm">
+                    Full Name <span class="required">*</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0" style="border-color:var(--gray-300);">
+                        <i class="bi bi-person text-teal"></i>
+                    </span>
+                    <input asp-for="FullName" class="form-control-nm border-start-0 ps-1"
+                           placeholder="e.g. Dr. Rajesh Sharma"
+                           autocomplete="name" required autofocus />
+                </div>
+                <span asp-validation-for="FullName" class="field-validation-error"></span>
+            </div>
+
+            <!-- Email Address -->
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label-nm">
+                    Official Email Address <span class="required">*</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0" style="border-color:var(--gray-300);">
+                        <i class="bi bi-envelope text-teal"></i>
+                    </span>
+                    <input asp-for="Email" class="form-control-nm border-start-0 ps-1"
+                           placeholder="official.name@nmd.gov.in"
+                           autocomplete="email" required type="email" />
+                </div>
+                <span asp-validation-for="Email" class="field-validation-error"></span>
+            </div>
+
+            <!-- Contact Number -->
+            <div class="mb-3">
+                <label asp-for="ContactNumber" class="form-label-nm">
+                    Contact Number <span class="text-muted small-text fw-normal">(Optional)</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0" style="border-color:var(--gray-300);">
+                        <i class="bi bi-telephone text-teal"></i>
+                    </span>
+                    <input asp-for="ContactNumber" class="form-control-nm border-start-0 ps-1"
+                           placeholder="e.g. +91 98765 43210"
+                           autocomplete="tel" type="tel" />
+                </div>
+                <span asp-validation-for="ContactNumber" class="field-validation-error"></span>
+            </div>
+
+            <!-- Requested Centre -->
+            <div class="mb-3">
+                <label asp-for="RequestedCentreId" class="form-label-nm">
+                    Affiliated De-Addiction Centre <span class="required">*</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0" style="border-color:var(--gray-300);">
+                        <i class="bi bi-building text-teal"></i>
+                    </span>
+                    <select asp-for="RequestedCentreId" asp-items="ViewBag.CentresList" class="form-select-nm border-start-0 ps-1" required>
+                        <option value="">-- Select De-Addiction Centre --</option>
+                    </select>
+                </div>
+                <span asp-validation-for="RequestedCentreId" class="field-validation-error"></span>
+            </div>
+
+            <!-- Reason for Access -->
+            <div class="mb-4">
+                <label asp-for="ReasonForAccess" class="form-label-nm">
+                    Reason for Access <span class="required">*</span>
+                </label>
+                <textarea asp-for="ReasonForAccess" class="form-control-nm" rows="3"
+                          placeholder="Please state your role (e.g. Counsellor, Clinical Psychologist, Medical Officer) and reason for requesting system access..." required></textarea>
+                <span asp-validation-for="ReasonForAccess" class="field-validation-error"></span>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn-primary-nm w-100 justify-content-center py-3 mb-3">
+                <i class="bi bi-send-check"></i>
+                Submit Access Request
+            </button>
+
+            <!-- Back Link -->
+            <div class="text-center pt-2" style="border-top:1px solid var(--gray-200);">
+                <a asp-action="Login" asp-controller="Account" class="text-muted small-text text-decoration-none d-inline-flex align-items-center gap-1">
+                    <i class="bi bi-arrow-left"></i> Back to Sign In
+                </a>
+            </div>
+        </form>
+
+        <div class="login-footer mt-4">
+            <i class="bi bi-shield-lock text-teal me-1"></i>
+            Security Notice: All registration requests are logged and verified prior to account activation.<br />
+            <small class="mt-1 d-block" style="color:var(--gray-400);">
+                Role and Centre authorization are assigned exclusively by National Administrators.
+            </small>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

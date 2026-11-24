@@ -1,0 +1,68 @@
+@model NashaMuktiDB.Models.AccountRequest
+@{
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
+    ViewData["Title"] = "Request Submitted";
+}
+
+<div class="login-page">
+    <div class="login-card" style="max-width: 520px;">
+
+        <!-- Success Icon -->
+        <div class="text-center mb-3">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(13, 148, 136, 0.12); color: var(--teal-600); display: inline-flex; align-items: center; justify-content: center; font-size: 2rem;">
+                <i class="bi bi-shield-check"></i>
+            </div>
+        </div>
+
+        <h1 class="login-heading text-center">Request Received</h1>
+        <p class="small-text text-muted text-center mb-4">
+            Your request for system access has been recorded and submitted to the National Administration.
+        </p>
+
+        <!-- Status Box -->
+        <div class="alert-nm alert-warning-nm mb-4" role="status">
+            <i class="bi bi-clock-history flex-shrink-0 fs-5 text-warning"></i>
+            <div>
+                <strong>Status: Pending Administrative Review</strong>
+                <p class="mb-0 mt-1 small-text" style="color:var(--gray-700);">
+                    Pending accounts cannot sign in or access clinical records until authorized by a National Administrator.
+                </p>
+            </div>
+        </div>
+
+        <!-- Request Details Table -->
+        <div class="panel p-3 mb-4" style="background:var(--gray-50); border:1px solid var(--gray-200); border-radius:8px;">
+            <div class="d-flex justify-content-between py-1 border-bottom">
+                <span class="small-text text-muted">Tracking ID:</span>
+                <span class="fw-600 text-navy">#REQ-@Model.AccountRequestId.ToString("D5")</span>
+            </div>
+            <div class="d-flex justify-content-between py-1 border-bottom">
+                <span class="small-text text-muted">Applicant Name:</span>
+                <span class="fw-600">@Model.FullName</span>
+            </div>
+            <div class="d-flex justify-content-between py-1 border-bottom">
+                <span class="small-text text-muted">Official Email:</span>
+                <code>@Model.Email</code>
+            </div>
+            <div class="d-flex justify-content-between py-1 border-bottom">
+                <span class="small-text text-muted">Requested Centre:</span>
+                <span class="small-text text-end fw-500">@(Model.RequestedCentre?.CentreName ?? "National De-Addiction Kendra")</span>
+            </div>
+            <div class="d-flex justify-content-between py-1">
+                <span class="small-text text-muted">Submitted At:</span>
+                <span class="small-text">@Model.CreatedAt.ToString("dd MMM yyyy, HH:mm") UTC</span>
+            </div>
+        </div>
+
+        <!-- Return Button -->
+        <a asp-action="Login" asp-controller="Account" class="btn-primary-nm w-100 justify-content-center py-3 text-decoration-none">
+            <i class="bi bi-box-arrow-in-right"></i>
+            Return to Sign In
+        </a>
+
+        <div class="login-footer mt-4">
+            <i class="bi bi-info-circle text-teal me-1"></i>
+            You will be contacted by your nodal centre coordinator upon verification.
+        </div>
+    </div>
+</div>

@@ -13,12 +13,44 @@
             Manage system administrators and authorized centre staff credentials
         </p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-action="AccountRequests" class="btn-outline-nm position-relative">
+            <i class="bi bi-inbox-fill text-teal"></i> Account Requests
+            @if (ViewBag.PendingRequestsCount != null && ViewBag.PendingRequestsCount > 0)
+            {
+                <span class="badge bg-danger rounded-pill ms-1" title="@ViewBag.PendingRequestsCount pending requests">
+                    @ViewBag.PendingRequestsCount
+                </span>
+            }
+        </a>
         <a asp-action="CreateUser" class="btn-primary-nm">
             <i class="bi bi-person-plus-fill"></i> Add New User
         </a>
     </div>
 </div>
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-tabs mb-4 border-bottom" style="border-color:var(--gray-300);">
+    <li class="nav-item">
+        <a class="nav-link active fw-600 text-teal" asp-action="Users">
+            <i class="bi bi-people-fill me-1"></i> Registered Accounts
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-muted" asp-action="AccountRequests">
+            <i class="bi bi-inbox me-1"></i> Access Requests
+            @if (ViewBag.PendingRequestsCount != null && ViewBag.PendingRequestsCount > 0)
+            {
+                <span class="badge bg-danger rounded-pill ms-1">@ViewBag.PendingRequestsCount</span>
+            }
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-muted" asp-action="AuditLog">
+            <i class="bi bi-journal-text me-1"></i> Security Audit Log
+        </a>
+    </li>
+</ul>
 
 <div class="panel">
     <div class="panel-header">
